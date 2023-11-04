@@ -159,6 +159,7 @@ public class CommandFactoryImpl implements CommandFactory {
       .addFromMandatoryProperty(props, WEB_JAVA_OPTS.getKey())
       .addFromMandatoryProperty(props, WEB_JAVA_ADDITIONAL_OPTS.getKey());
     addProxyJvmOptions(jvmOptions);
+    addDebugJvmOptions(jvmOptions);
 
     JavaCommand<WebJvmOptions> command = new JavaCommand<WebJvmOptions>(ProcessId.WEB_SERVER, homeDir)
       .setReadsArgumentsFromFile(true)
@@ -231,5 +232,10 @@ public class CommandFactoryImpl implements CommandFactory {
 
   private Optional<String> getPropsValue(String key) {
     return Optional.ofNullable(props.value(key));
+  }
+
+
+  private void addDebugJvmOptions(JvmOptions jvmOptions) {
+    jvmOptions.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005");
   }
 }
