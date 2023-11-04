@@ -57,6 +57,8 @@ public class InputComponentStore extends DefaultFileSystem.Cache {
     UnanalyzedLanguages.CPP, Pattern.compile(".*\\.cpp|.*\\.cc|.*\\.cxx|.*\\.c\\+\\+", Pattern.CASE_INSENSITIVE));
 
   private final SortedSet<String> globalLanguagesCache = new TreeSet<>();
+
+  /** moduleKey -> set of language */
   private final Map<String, SortedSet<String>> languagesCache = new HashMap<>();
   private final Map<String, InputFile> globalInputFileCache = new HashMap<>();
   private final Map<String, Map<String, InputFile>> inputFileByModuleCache = new LinkedHashMap<>();

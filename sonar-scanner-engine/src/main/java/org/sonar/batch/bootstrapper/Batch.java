@@ -31,6 +31,8 @@ import org.sonar.scanner.bootstrap.SpringGlobalContainer;
 
 /**
  * Entry point for SonarQube Scanner API 2.1+.
+ * 在 scanner 端执行, 会由对应的客户端从 sonar web server 上下载 jar 包, 然后执行
+ * jar 包的名称为: sonar-scanner-engine-shaded-9.9.3-SNAPSHOT-all.jar
  *
  * @since 2.14
  */

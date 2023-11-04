@@ -286,6 +286,7 @@ public class SpringProjectScanContainer extends SpringComponentContainer {
       UnchangedFilesHandler.class,
 
       // Filesystem
+      // 用于访问项目文件
       DefaultProjectFileSystem.class,
 
       // CI
@@ -360,6 +361,7 @@ public class SpringProjectScanContainer extends SpringComponentContainer {
     getComponentByType(DeprecatedPropertiesWarningGenerator.class).execute();
 
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
     getComponentByType(ProjectFileIndexer.class).index();
 
     // Log detected languages and their profiles after FS is indexed and languages detected
@@ -367,12 +369,15 @@ public class SpringProjectScanContainer extends SpringComponentContainer {
 
     scanRecursively(tree, tree.root());
 
+    // 大部分的分析代码在这里执行
     LOG.info("------------- Run sensors on project");
     getComponentByType(ProjectSensorsExecutor.class).execute();
 
     getComponentByType(ScmPublisher.class).publish();
 
     getComponentByType(CpdExecutor.class).execute();
+
+    // 上报分析结果至 web server
     getComponentByType(ReportPublisher.class).execute();
 
     if (properties.shouldWaitForQualityGate()) {
@@ -381,6 +386,8 @@ public class SpringProjectScanContainer extends SpringComponentContainer {
     }
 
     getComponentByType(PostJobsExecutor.class).execute();
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if (analysisMode.isMediumTest()) {
       getComponentByType(AnalysisObservers.class).notifyEndOfScanTask();
