@@ -1,0 +1,50 @@
+configurations {
+    testImplementation.extendsFrom(compileOnlyApi)
+}
+
+dependencies {
+    compileOnlyApi 'org.sonarsource.api.plugin:sonar-plugin-api'
+    implementation 'commons-io:commons-io'
+    implementation group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.55.0'
+    implementation group: 'org.sonarsource.java', name: 'java-frontend', version: '7.27.1.33504'
+    implementation group: 'org.sonarsource.sslr-squid-bridge', name: 'sslr-squid-bridge', version: '2.7.1.392'
+
+
+
+
+    testImplementation 'junit:junit'
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation project(':sonar-plugin-api-impl')
+}
+
+jar {
+    manifest {
+        attributes(
+                'Plugin-Key': 'pmd',
+                'Plugin-Version': project.version,
+                'Plugin-Class': 'org.sonar.plugins.pmd.PmdPlugin',
+                'Plugin-ChildFirstClassLoader': 'false',
+                'Sonar-Version': project.version,
+                'SonarLint-Supported': 'true',
+                'Plugin-Name': 'pmd'
+        )
+    }
+    into('META-INF/lib') {
+        from configurations.runtimeClasspath
+    }
+}
+
+artifactoryPublish.skip = false
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            if (release) {
+                artifact sourcesJar
+                artifact javadocJar
+            }
+        }
+    }
+}
