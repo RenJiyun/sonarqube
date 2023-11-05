@@ -8,6 +8,8 @@ dependencies {
     implementation group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.55.0'
     implementation group: 'org.sonarsource.java', name: 'java-frontend', version: '7.27.1.33504'
     implementation group: 'org.sonarsource.sslr-squid-bridge', name: 'sslr-squid-bridge', version: '2.7.1.392'
+    implementation group: 'org.jdom', name: 'jdom', version: '1.1'
+
 
 
 
