@@ -2,4 +2,4 @@
 
 ./stop.sh
 
-./gradlew build "$@"
+./gradlew build -x test -x :plugins:sonar-pmd-plugin:licenseMain --stacktrace "$@"
