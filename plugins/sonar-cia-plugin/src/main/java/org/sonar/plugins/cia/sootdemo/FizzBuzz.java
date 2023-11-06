@@ -1,4 +1,4 @@
-package org.sonar.plugins.cia;
+package org.sonar.plugins.cia.sootdemo;
 
 public class FizzBuzz {
 
