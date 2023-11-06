@@ -1,0 +1,47 @@
+configurations {
+    testImplementation.extendsFrom(compileOnlyApi)
+}
+
+dependencies {
+    compileOnlyApi 'org.sonarsource.api.plugin:sonar-plugin-api'
+    implementation 'commons-io:commons-io'
+
+    implementation group: 'org.soot-oss', name: 'soot', version: '4.4.1'
+
+
+    testImplementation 'junit:junit'
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation project(':sonar-plugin-api-impl')
+}
+
+jar {
+    manifest {
+        attributes(
+                'Plugin-Key': 'cia',
+                'Plugin-Version': project.version,
+                'Plugin-Class': 'org.sonar.plugins.cia.CiaPlugin',
+                'Plugin-ChildFirstClassLoader': 'false',
+                'Sonar-Version': project.version,
+                'SonarLint-Supported': 'true',
+                'Plugin-Name': 'cia'
+        )
+    }
+    into('META-INF/lib') {
+        from configurations.runtimeClasspath
+    }
+}
+
+artifactoryPublish.skip = false
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            if (release) {
+                artifact sourcesJar
+                artifact javadocJar
+            }
+        }
+    }
+}
