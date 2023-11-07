@@ -17,6 +17,7 @@ public class CallGraphDemo {
     public static void main(String[] args) {
         Options.v().set_whole_program(true);
         Options.v().setPhaseOption("cg.spark", "on");
+        Options.v().setPhaseOption("cg.spark", "on-fly-cg:false");
         Options.v().set_prepend_classpath(true);
         Options.v().set_allow_phantom_refs(true);
         Options.v().set_soot_classpath(
