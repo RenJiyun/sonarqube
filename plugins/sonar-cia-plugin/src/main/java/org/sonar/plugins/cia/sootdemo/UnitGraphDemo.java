@@ -15,11 +15,13 @@ public class UnitGraphDemo {
         Options.v().set_soot_classpath(
                 "plugins/sonar-cia-plugin/build/classes/java/main/org/sonar/plugins/cia/sootdemo");
 
+        String className = "Fizz";
+        String methodName = "fizz";
         Scene scene = Scene.v();
-        scene.loadClassAndSupport("FizzBuzz");
+        scene.loadClassAndSupport(className);
         scene.loadNecessaryClasses();
-        SootClass sootClass = scene.getSootClass("FizzBuzz");
-        SootMethod sootMethod = sootClass.getMethodByName("printFizzBuzz");
+        SootClass sootClass = scene.getSootClass(className);
+        SootMethod sootMethod = sootClass.getMethodByName(methodName);
         briefUnitGraph(sootMethod);
     }
 
