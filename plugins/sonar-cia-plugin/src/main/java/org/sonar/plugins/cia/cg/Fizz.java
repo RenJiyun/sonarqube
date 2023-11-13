@@ -1,4 +1,6 @@
-package org.sonar.plugins.cia.sootdemo;
+package org.sonar.plugins.cia.cg;
+
+import org.sonar.plugins.cia.cg.Buzz;
 
 import java.util.Random;
 

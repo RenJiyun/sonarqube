@@ -1,4 +1,4 @@
-package org.sonar.plugins.cia.sootdemo;
+package org.sonar.plugins.cia.cg;
 
 public class Buzz {
 
@@ -7,6 +7,7 @@ public class Buzz {
     }
 
     public void buzz0() {
+        buzz();
         System.out.println("Buzz0");
     }
 
