@@ -3,7 +3,7 @@ dependencies {
     // bundledPlugin "org.sonarsource.dotnet:sonar-vbnet-plugin"
     // bundledPlugin 'org.sonarsource.flex:sonar-flex-plugin'
     // bundledPlugin 'org.sonarsource.html:sonar-html-plugin'
-    // bundledPlugin 'org.sonarsource.java:sonar-java-plugin'
+    bundledPlugin 'org.sonarsource.java:sonar-java-plugin'
     // bundledPlugin 'org.sonarsource.jacoco:sonar-jacoco-plugin'
     // bundledPlugin 'org.sonarsource.javascript:sonar-javascript-plugin'
     // bundledPlugin 'org.sonarsource.php:sonar-php-plugin'
