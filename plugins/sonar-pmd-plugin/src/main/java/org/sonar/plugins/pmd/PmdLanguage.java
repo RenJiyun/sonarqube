@@ -5,7 +5,7 @@ import org.sonar.api.resources.Language;
 public class PmdLanguage implements Language {
     @Override
     public String getKey() {
-        return "java";
+        return "pmd";
     }
 
     @Override
