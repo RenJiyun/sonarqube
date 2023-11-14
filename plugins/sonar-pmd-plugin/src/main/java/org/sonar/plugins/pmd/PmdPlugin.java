@@ -28,7 +28,8 @@ public class PmdPlugin implements Plugin {
                 PmdUnitTestsRulesDefinition.class,
                 PmdProfileExporter.class,
                 PmdProfileImporter.class,
-                PmdViolationRecorder.class
+                PmdViolationRecorder.class,
+                PmdLanguage.class
         );
     }
 }
