@@ -18,7 +18,7 @@ dependencies {
     // bundledPlugin 'org.sonarsource.text:sonar-text-plugin'
 
     // bundle plugins fron the current project
-    // bundledPlugin project(':plugins:sonar-education-plugin')
+    bundledPlugin project(':plugins:sonar-education-plugin')
     bundledPlugin project(':plugins:sonar-pmd-plugin')
     bundledPlugin project(':plugins:sonar-cia-plugin')
 }
