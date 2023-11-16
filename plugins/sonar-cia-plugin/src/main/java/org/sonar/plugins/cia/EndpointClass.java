@@ -58,7 +58,8 @@ public class EndpointClass {
     }
 
     private static String getEndpointClassName(SootClass sootClass) {
-        if (!sootClass.getSuperclass().getName().equals(ENDPOINT_SUPER_CLASS)) {
+
+        if (!sootClass.hasSuperclass() || !sootClass.getSuperclass().getName().equals(ENDPOINT_SUPER_CLASS)) {
             return null;
         }
 

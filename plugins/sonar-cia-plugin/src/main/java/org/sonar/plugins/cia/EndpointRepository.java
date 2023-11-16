@@ -2,6 +2,8 @@ package org.sonar.plugins.cia;
 
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.scanner.ScannerSide;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import soot.Scene;
 import soot.options.Options;
 
@@ -12,6 +14,8 @@ import java.util.stream.Collectors;
 
 @ScannerSide
 public class EndpointRepository {
+    private static final Logger LOGGER = Loggers.get(EndpointRepository.class);
+
     private static final String ENDPOINT_SUPER_CLASS = "com.wlzq.core.BaseService";
     private static final String ENDPOINT_RETURN_TYPE = "com.wlzq.core.dto.ResultDto";
 
@@ -44,7 +48,10 @@ public class EndpointRepository {
         Options.v().set_no_bodies_for_excluded(true);
         Options.v().set_soot_classpath(sootClassPath);
         Options.v().set_process_dir(processDirs);
+
+        LOGGER.info("soot load classes, processDirs: {}, sootClassPath: {}", processDirs, sootClassPath);
         scene.loadNecessaryClasses();
+        LOGGER.info("soot load classes done");
 
         this.endpointClasses = scene.getClasses().stream()
                 .map(EndpointClass::make)
