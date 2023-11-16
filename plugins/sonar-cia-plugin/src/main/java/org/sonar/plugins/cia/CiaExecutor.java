@@ -4,20 +4,40 @@ import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.scanner.ScannerSide;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
-import soot.PackManager;
-import soot.Scene;
-import soot.SootMethod;
+import soot.*;
+import soot.jimple.spark.SparkTransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.CallGraphPack;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.options.Options;
 import soot.util.dot.DotGraph;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 @ScannerSide
 public class CiaExecutor {
     private static final Logger LOGGER = Loggers.get(CiaExecutor.class);
+
+    private PackManager packManager;
+
+    /**
+     * 用于裁剪 cg 的 Transformer
+     */
+    private final SceneTransformer cgEdgePruner = new SceneTransformer() {
+        @Override
+        protected void internalTransform(String phaseName, Map<String, String> options) {
+            CallGraph cg = Scene.v().getCallGraph();
+            LOGGER.info("Pruning call graph");
+        }
+    };
+
+    public CiaExecutor() {
+        this.packManager = PackManager.v();
+        ScenePack wjtpPack = (ScenePack) packManager.getPack("wjtp");
+        wjtpPack.insertBefore(new Transform("wjtp.cia", cgEdgePruner), "wjtp.mhp");
+    }
 
     public void execute(SensorContext context, Scene scene, List<Endpoint> endpoints) {
         Options.v().setPhaseOption("cg.spark", "on");
@@ -35,7 +55,7 @@ public class CiaExecutor {
         scene.setEntryPoints(entryPoints);
 
         LOGGER.info("Soot running packs, entryPoints: {}", entryPoints);
-        PackManager.v().runPacks();
+        packManager.runPacks();
         LOGGER.info("Soot running packs done");
 
         CallGraph cg = scene.getCallGraph();
