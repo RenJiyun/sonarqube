@@ -13,7 +13,8 @@ public class CiaPlugin implements Plugin {
         context.addExtensions(
                 CiaExecutor.class,
                 CiaConfiguration.class,
-                CiaSensor.class
+                CiaSensor.class,
+                EndpointRepository.class
         );
     }
 }
