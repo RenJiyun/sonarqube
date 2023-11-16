@@ -30,8 +30,20 @@ public class CiaExecutor {
         protected void internalTransform(String phaseName, Map<String, String> options) {
             CallGraph cg = Scene.v().getCallGraph();
             LOGGER.info("Pruning call graph");
+            for (Iterator<Edge> it = cg.iterator(); it.hasNext(); ) {
+                Edge e = it.next();
+                if (needPrune(e)) {
+                    LOGGER.info("Pruning edge: {}", e);
+                    it.remove();
+                }
+            }
+        }
+
+        private boolean needPrune(Edge e) {
+            return !e.getTgt().method().getName().contains("wlzq");
         }
     };
+
 
     public CiaExecutor() {
         this.packManager = PackManager.v();
