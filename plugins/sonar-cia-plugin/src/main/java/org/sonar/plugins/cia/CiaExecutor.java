@@ -40,7 +40,7 @@ public class CiaExecutor {
         }
 
         private boolean needPrune(Edge e) {
-            return !e.getTgt().method().getName().contains("wlzq");
+            return !e.getTgt().method().getSignature().contains("wlzq");
         }
     };
 
