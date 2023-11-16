@@ -54,7 +54,7 @@ public class CiaSensor implements Sensor {
             );
 
             if (endpoints != null && !endpoints.isEmpty()) {
-                executor.execute(scene, endpoints);
+                executor.execute(context, scene, endpoints);
             }
         }
     }

@@ -49,9 +49,9 @@ public class EndpointRepository {
         Options.v().set_soot_classpath(sootClassPath);
         Options.v().set_process_dir(processDirs);
 
-        LOGGER.info("soot load classes, processDirs: {}, sootClassPath: {}", processDirs, sootClassPath);
+        LOGGER.info("Soot load classes, processDirs: {}, sootClassPath: {}", processDirs, sootClassPath);
         scene.loadNecessaryClasses();
-        LOGGER.info("soot load classes done");
+        LOGGER.info("Soot load classes done");
 
         this.endpointClasses = scene.getClasses().stream()
                 .map(EndpointClass::make)
