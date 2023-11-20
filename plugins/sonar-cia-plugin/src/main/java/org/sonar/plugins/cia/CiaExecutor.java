@@ -5,6 +5,7 @@ import org.sonar.api.scanner.ScannerSide;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 import soot.*;
+import soot.JastAddJ.Opt;
 import soot.jimple.spark.SparkTransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.CallGraphPack;
@@ -55,6 +56,7 @@ public class CiaExecutor {
         Options.v().setPhaseOption("cg.spark", "on");
         Options.v().setPhaseOption("cg.spark", "on-fly-cg:true");
         Options.v().setPhaseOption("cg.spark", "verbose:true");
+        Options.v().setPhaseOption("cg.spark", "apponly:true");
 
         List<SootMethod> entryPoints = endpoints.stream()
                 .map(Endpoint::getSootMethod)
