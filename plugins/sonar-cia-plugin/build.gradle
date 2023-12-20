@@ -6,8 +6,6 @@ dependencies {
     compileOnlyApi 'org.sonarsource.api.plugin:sonar-plugin-api'
     implementation 'commons-io:commons-io'
 
-    implementation group: 'org.soot-oss', name: 'soot', version: '4.4.1'
-
 
     testImplementation 'junit:junit'
     testImplementation 'org.assertj:assertj-core'
