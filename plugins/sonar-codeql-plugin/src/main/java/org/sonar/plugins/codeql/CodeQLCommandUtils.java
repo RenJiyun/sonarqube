@@ -58,15 +58,15 @@ public class CodeQLCommandUtils {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        // createDatabase("/home/ren/.tmp/cq/db/wlzq-activity-db",
-        // "/home/ren/.tmp/cq/wlzq-activity");
-        runQuery("/home/ren/.tmp/cq/db/wlzq-activity-db",
-                "/home/ren/work/code/sonarqube/plugins/sonar-codeql-plugin/src/main/resources/wlzq-ql/DependsOn.ql",
-                "/home/ren/work/code/sonarqube/plugins/sonar-codeql-plugin/src/main/resources/wlzq-ql/output/DependsOn.bqrs",
-                "/tmp");
-        bqrs2csv(
-                "/home/ren/work/code/sonarqube/plugins/sonar-codeql-plugin/src/main/resources/wlzq-ql/output/DependsOn.bqrs",
-                "/home/ren/work/code/sonarqube/plugins/sonar-codeql-plugin/src/main/resources/wlzq-ql/output/DependsOn.csv",
-                "/tmp");
+        createDatabase("/home/ren/.tmp/cq/db/wlzq-activity-db",
+                "/home/ren/.tmp/cq/wlzq-activity");
+        // runQuery("/home/ren/.tmp/cq/db/wlzq-activity-db",
+        // "/home/ren/work/code/sonarqube/plugins/sonar-codeql-plugin/src/main/resources/wlzq-ql/DependsOn.ql",
+        // "/home/ren/work/code/sonarqube/plugins/sonar-codeql-plugin/src/main/resources/wlzq-ql/output/DependsOn.bqrs",
+        // "/tmp");
+        // bqrs2csv(
+        // "/home/ren/work/code/sonarqube/plugins/sonar-codeql-plugin/src/main/resources/wlzq-ql/output/DependsOn.bqrs",
+        // "/home/ren/work/code/sonarqube/plugins/sonar-codeql-plugin/src/main/resources/wlzq-ql/output/DependsOn.csv",
+        // "/tmp");
     }
 }
