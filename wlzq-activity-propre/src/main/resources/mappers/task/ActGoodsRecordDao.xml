@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.task.dao.ActGoodsRecordDao">
+
+    <resultMap type="com.wlzq.activity.task.model.ActGoodsRecord" id="actGoodsRecordMap">
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="actGoodsRecordColumns">
+        a.id AS "id",
+		a.mobile AS "mobile",
+		a.user_id AS "userId",
+		a.open_id AS "openId",
+		a.customer_id AS "customerId",
+		a.flag AS "flag",
+		a.activity_code AS "activityCode",
+		a.goods_code AS "goodsCode",
+		a.goods_quantity AS "goodsQuantity",
+		a.create_time AS "createTime",
+        a.remark AS "remark"
+    </sql>
+
+    <select id="findList" resultMap="actGoodsRecordMap">
+        SELECT
+        <include refid="actGoodsRecordColumns"/>
+        FROM act_goods_record a
+        <where>
+            <if test="activityCode != null and activityCode != ''">
+                AND a.activity_code = #{activityCode}
+            </if>
+            <if test="mobile != null and mobile != ''">
+                AND a.mobile = #{mobile}
+            </if>
+            <if test="customerId != null and customerId != ''">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="flag != null">
+                AND a.flag = #{flag}
+            </if>
+            <if test="goodsCode != null and goodsCode != ''">
+                AND a.goods_code = #{goodsCode}
+            </if>
+        </where>
+        ORDER BY a.id DESC
+    </select>
+
+
+    <select id="list" resultMap="actGoodsRecordMap">
+        SELECT <include refid="actGoodsRecordColumns"/> FROM act_goods_record a
+        <where>
+            <if test="activityCode != null and activityCode != ''">
+                AND a.activity_code = #{activityCode}
+            </if>
+            <if test="mobile != null and mobile != ''">
+                AND a.mobile = #{mobile}
+            </if>
+            <if test="userId != null and userId != ''">
+                AND a.user_id = #{userId}
+            </if>
+            <if test="customerId != null and customerId != ''">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="flag != null">
+                AND a.flag = #{flag}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+        INSERT INTO act_goods_record(
+            mobile,
+            user_id,
+            open_id,
+            customer_id,
+            flag,
+            activity_code,
+            goods_code,
+            goods_quantity,
+            create_time,
+            remark
+        ) VALUES (
+                     #{mobile, jdbcType=VARCHAR},
+                     #{userId, jdbcType=VARCHAR},
+                     #{openId, jdbcType=VARCHAR},
+                     #{customerId, jdbcType=VARCHAR},
+                     #{flag, jdbcType=INTEGER},
+                     #{activityCode, jdbcType=VARCHAR},
+                     #{goodsCode, jdbcType=VARCHAR},
+                     #{goodsQuantity, jdbcType=INTEGER},
+                     #{createTime, jdbcType=TIMESTAMP},
+                     #{remark,jdbcType=VARCHAR}
+                 )
+    </insert>
+
+</mapper>

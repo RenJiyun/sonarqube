@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.quant.dao.ActQuantStratAvalDao">
+    
+	<sql id="actQuantStratAvalColumns">
+		a.id AS "id",
+		a.account AS "account",
+		a.account_type AS "accountType",
+		a.strategy_name AS "strategyName",
+		a.evaluation AS "evaluation",
+		a.score AS "score",
+		a.run_time AS "runTimeD",
+		a.backtrace_datestart AS "backtraceDateStart",
+		a.backtrace_dateend AS "backtraceDateEnd",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.is_deleted AS "isDeleted"
+	</sql>
+	
+	<sql id="actQuantStratAvalJoins">
+	</sql>
+    
+	<select id="get" resultType="ActQuantStratAval">
+		SELECT 
+			<include refid="actQuantStratAvalColumns"/>
+		FROM act_quant_strat_aval a
+		<include refid="actQuantStratAvalJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActQuantStratAval">
+		SELECT 
+			<include refid="actQuantStratAvalColumns"/>
+		FROM act_quant_strat_aval a
+		<include refid="actQuantStratAvalJoins"/>
+		<where>
+			
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="ActQuantStratAval">
+		SELECT 
+			<include refid="actQuantStratAvalColumns"/>
+		FROM act_quant_strat_aval a
+		<include refid="actQuantStratAvalJoins"/>
+		<where>
+			
+		</where>		
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_quant_strat_aval(
+			id,
+			account,
+			account_type,
+			strategy_name,
+			evaluation,
+			score,
+			run_time,
+			backtrace_datestart,
+			backtrace_dateend,
+			create_time,
+			update_time,
+			is_deleted
+		) VALUES (
+			#{id, jdbcType=VARCHAR},
+			#{account, jdbcType=VARCHAR},
+			#{accountType, jdbcType=VARCHAR},
+			#{strategyName, jdbcType=VARCHAR},
+			#{evaluation, jdbcType=VARCHAR},
+			#{score, jdbcType=VARCHAR},
+			#{runTimeD, jdbcType=TIMESTAMP},
+			#{backtraceDateStart, jdbcType=VARCHAR},
+			#{backtraceDateEnd, jdbcType=VARCHAR},
+			#{createTime, jdbcType=TIMESTAMP},
+			#{updateTime, jdbcType=TIMESTAMP},
+			#{isDeleted, jdbcType=INTEGER}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_quant_strat_aval SET 	
+			account = #{account},
+			account_type = #{accountType},
+			strategy_name = #{strategyName},
+			evaluation = #{evaluation},
+			score = #{score},
+			run_time = #{runTimeD},
+			create_time = #{createTime},
+			update_time = #{updateTime},
+			is_deleted = #{isDeleted}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_quant_strat_aval
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.l2recieve.dao.Level2RecieveDao">
+    
+	<sql id="level2RecieveColumns">
+		a.id AS "id",
+		a.goods_id AS "goodsId",
+		a.mobile AS "mobile",
+		a.type AS "type",
+		a.user_id AS "userId",
+		a.order_no AS "orderNo",
+		a.notity_status AS "notityStatus",
+		a.notity_message AS "notityMessage",
+		a.create_time AS "createTime",
+		a.status AS "status",
+		a.take_time AS "takeTime",
+		a.remark AS "remark"
+	</sql>
+	
+	<sql id="level2RecieveJoins">
+	</sql>
+    
+	<select id="get" resultType="Level2Recieve">
+		SELECT 
+			<include refid="level2RecieveColumns"/>
+		FROM act_level2_recieve a
+		<include refid="level2RecieveJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Level2Recieve">
+		SELECT 
+			<include refid="level2RecieveColumns"/>
+		FROM act_level2_recieve a
+		<include refid="level2RecieveJoins"/>
+		<where>
+			
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="orderNo != null and orderNo != ''">
+				AND a.order_no = #{orderNo}
+			</if>
+			<if test="notityStatus != null">
+				AND a.notity_status = #{notityStatus}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findStatus" resultType="Level2Recieve">
+		SELECT 
+			<include refid="level2RecieveColumns"/>
+		FROM act_level2_recieve a
+		where
+			a.mobile = #{mobile}
+			and a.type != 4
+	</select>
+	
+	
+	<select id="findNotActive" resultType="Level2Recieve">
+		select *
+		  from (select row_.*, rownum rownum_
+		          from (
+					SELECT 
+						<include refid="level2RecieveColumns"/>
+					FROM act_level2_recieve a
+					where
+						a.status = 3
+					order by a.id
+				) row_
+		         WHERE <![CDATA[ rownum <= #{end} ]]>
+		        ) 
+		 WHERE rownum_ > #{start}
+	</select>
+	
+	<select id="findAllList" resultType="Level2Recieve">
+		SELECT 
+			<include refid="level2RecieveColumns"/>
+		FROM act_level2_recieve a
+		<include refid="level2RecieveJoins"/>
+		<where>
+			
+		</where>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_level2_recieve(
+			goods_id,
+			mobile,
+			type,
+			invite_id,
+			user_id,
+			order_no,
+			notity_status,
+			notity_message,
+			create_time,
+			status,
+			take_time,
+			remark
+		) VALUES (
+			#{goodsId},
+			#{mobile, jdbcType=VARCHAR},
+			#{type},
+			#{inviteId, jdbcType=VARCHAR},
+			#{userId, jdbcType=VARCHAR},
+			#{orderNo, jdbcType=VARCHAR},
+			#{notityStatus, jdbcType=VARCHAR},
+			#{notityMessage, jdbcType=VARCHAR},
+			#{createTime, jdbcType=TIMESTAMP},
+			#{status, jdbcType=INTEGER},
+			#{takeTime, jdbcType=TIMESTAMP},
+			#{remark, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_level2_recieve SET
+			status = #{status, jdbcType=INTEGER},
+			order_no = #{orderNo, jdbcType=VARCHAR},
+			take_time = #{takeTime, jdbcType=TIMESTAMP},
+			active_time = #{activeTime, jdbcType=TIMESTAMP},
+			notity_status = #{notityStatus, jdbcType=INTEGER},
+			notity_message = #{notityMessage, jdbcType=VARCHAR},
+			remark = #{remark, jdbcType=VARCHAR}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

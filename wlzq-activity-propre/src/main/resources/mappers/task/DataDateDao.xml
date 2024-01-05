@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.task.dao.DataDateDao">
+
+    <select id="getLastDataDate" resultType="com.wlzq.activity.task.model.DataDate">
+        select * from (
+            SELECT
+            a.data_date as dataDate,
+            a.data_date_start as dataDateStart
+            FROM DATA_DATE a
+            WHERE a.type = #{type}
+            ORDER BY a.data_date DESC
+        ) where rownum = 1
+    </select>
+
+</mapper>

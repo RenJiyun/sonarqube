@@ -1,0 +1,15 @@
+{
+    "service":{  
+      "id": "activity",   
+      "name": "activity",  
+      "address": "localhost", 
+      "port": 8087,  
+      "tags": ["localhost"], 
+      "checks": [   
+          {
+             "http": "http://localhost:8087/activity/check",
+             "interval": "5s" 
+         }
+     ]
+   }
+}

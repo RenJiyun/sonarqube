@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.base.dao.ActActivityVoucherDao">
+    
+	<sql id="actActivityVoucherColumns">
+		a.id AS "id",
+		a.activity_code AS "activityCode",
+		a.user_id AS "userId",
+		a.voucher AS "voucher",
+		a.status AS "status",
+		a.create_time AS "createTime"
+	</sql>
+	
+	<sql id="actActivityVoucherJoins">
+	</sql>
+    
+	<select id="get" resultType="ActActivityVoucher">
+		SELECT 
+			<include refid="actActivityVoucherColumns"/>
+		FROM act_activity_voucher a
+		<include refid="actActivityVoucherJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActActivityVoucher">
+		SELECT 
+			<include refid="actActivityVoucherColumns"/>
+		FROM act_activity_voucher a
+		<include refid="actActivityVoucherJoins"/>
+		<where>
+			
+			<if test="activityCode != null and activityCode != ''">
+				AND a.activity_code = #{activityCode}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="voucher != null and voucher != ''">
+				AND a.voucher = #{voucher}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="ActActivityVoucher">
+		SELECT 
+			<include refid="actActivityVoucherColumns"/>
+		FROM act_activity_voucher a
+		<include refid="actActivityVoucherJoins"/>
+		<where>
+			
+		</where>		
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_activity_voucher(
+			activity_code,
+			user_id,
+			voucher,
+			status,
+			create_time
+		) VALUES (
+			#{activityCode, jdbcType=VARCHAR},
+			#{userId, jdbcType=VARCHAR},
+			#{voucher, jdbcType=VARCHAR},
+			#{status, jdbcType=INTEGER},
+			#{createTime, jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_activity_voucher SET 	
+			activity_code = #{activityCode, jdbcType=VARCHAR},
+			user_id = #{userId, jdbcType=VARCHAR},
+			voucher = #{voucher, jdbcType=VARCHAR},
+			status = #{status, jdbcType=INTEGER},
+			create_time = #{createTime, jdbcType=TIMESTAMP}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_activity_voucher
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

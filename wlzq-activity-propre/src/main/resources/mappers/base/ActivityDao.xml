@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wlzq.activity.base.dao.ActivityDao" >
+  	<resultMap id="actResultMap" type="com.wlzq.activity.base.model.Activity">
+	  <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+	  <result property="dateFrom" column="dateFrom" jdbcType="TIMESTAMP"/>
+	  <result property="dateTo" column="dateTo" jdbcType="TIMESTAMP"/>
+	</resultMap>
+  <!-- 查询的列  start  -->
+  <sql id="base_columns" >
+  		a.ID as id,
+  		a.CODE as code,
+  		a.GROUP_CODE as groupCode,
+  		a.NAME as name,
+  		a.CREATE_TIME as createTime,
+  		a.DATE_FROM as dateFrom,
+		a.time_from AS timeFrom,
+		a.time_to AS timeTo,
+  		a.DATE_TO as dateTo,
+  		a.IS_DELETED as isDeleted,
+  		a.REMARK as remark,
+  		a.STATUS as status,
+  		a.TOTAL_NUM as totalNum,
+  		a.IS_REBUILD as isRebuild,
+		a.breaker_time_from AS "breakerTimeFrom",
+		a.breaker_time_to AS "breakerTimeTo",
+		a.breaker_number AS "breakerNumber",
+		a.breaker_status AS "breakerStatus"
+  </sql>
+  
+  <sql id="all_columns" >
+   <include refid="base_columns" />
+  </sql>
+  <!-- 查询的列  end  -->
+  
+  <!-- 分页  start  -->
+  <sql id = "page">
+  	<if test="start != null and end != null and start >= 0 and end >= 0 ">
+  		limit #{start},#{end}
+  	</if>
+  </sql>
+  <!-- 分页  end  -->
+  
+  <!-- 查询条件 start -->
+  <sql id="comm_where">
+  	1=1
+  		<if test="id != null and id != '' ">
+	  		and a.ID = #{id}
+	  	</if>
+  		<if test="code != null and code != '' ">
+	  		and a.CODE = #{code}
+	  	</if>
+  		<if test="name != null and name != '' ">
+	  		and a.NAME = #{name}
+	  	</if>
+  		<if test="createTime != null and createTime != '' ">
+	  		and a.CREATE_TIME = #{createTime}
+	  	</if>
+  		<if test="dateFrom != null and dateFrom != '' ">
+	  		and a.DATE_FROM = #{dateFrom}
+	  	</if>
+  		<if test="dateTo != null and dateTo != '' ">
+	  		and a.DATE_TO = #{dateTo}
+	  	</if>
+  		<if test="isDeleted != null and isDeleted != '' ">
+	  		and a.IS_DELETED = #{isDeleted}
+	  	</if>
+  		<if test="remark != null and remark != '' ">
+	  		and a.REMARK = #{remark}
+	  	</if>
+  		<if test="status != null and status != '' ">
+	  		and a.STATUS = #{status}
+	  	</if>
+  		<if test="totalNum != null and totalNum != '' ">
+	  		and a.TOTAL_NUM = #{totalNum}
+	  	</if>
+  		<if test="isRebuild != null and isRebuild != '' ">
+	  		and a.IS_REBUILD = #{isRebuild}
+	  	</if>
+  </sql>
+  <!-- 查询条件 end  -->
+  
+  <!-- 实体通用方法  start  -->
+  <select id="find" resultMap="actResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="all_columns" />
+    from ACT_ACTIVITY a
+    where a.id = #{id,jdbcType=INTEGER}
+  </select>
+  
+  <select id="findByIds" resultMap="actResultMap">
+  	 select 
+     <include refid="all_columns" />
+     from ACT_ACTIVITY a
+     where a.id in 
+     <foreach collection="array" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+     </foreach>
+  </select>
+   <select id="findActivityByCode" resultMap="actResultMap">
+  	 select 
+     <include refid="all_columns" />
+     from ACT_ACTIVITY a
+     where a.CODE = #{code}
+     and rownum <![CDATA[<]]> 2
+  </select>
+  
+  <select id="query" resultMap="actResultMap" parameterType="java.util.Map" >
+  	select 
+  	<include refid="all_columns"></include>
+  	from ACT_ACTIVITY a
+  	<where>
+  		<include refid="comm_where"></include>
+  		<include refid="page"></include>
+  	</where>
+  	
+  </select>
+  
+  <select id="countAll" resultType="java.lang.Long">
+  	select count(*) from ACT_ACTIVITY
+  </select>
+  
+  <select id="count" resultType="java.lang.Long">
+  	select count(*) from ACT_ACTIVITY a
+  	<where>
+  		<include refid="comm_where"></include>
+  	</where>
+  </select>
+  
+  <delete id="deleteById" parameterType="java.lang.Integer">
+  	delete a from ACT_ACTIVITY a where a.id = #{id}
+  </delete>
+  
+  <delete id="delete" parameterType="java.util.Map">
+  	delete a from ACT_ACTIVITY a
+  	<where>
+  		<include refid="comm_where"></include>
+  	</where>
+  </delete>
+  
+  <!-- 实体通用方法  end  -->
+  
+  <!-- 修改 start -->
+  <update id="update" parameterType="Activity" >
+  	update ACT_ACTIVITY a 
+  	<set>  
+	  		<if test="isRebuild != null">
+		  		a.IS_REBUILD = #{isRebuild},
+		  	</if>
+	  		<if test="breakerStatus != null">
+		  		a.breaker_status = #{breakerStatus},
+		  	</if>
+		  	<if test="remark != null">
+		  		a.REMARK = #{remark},
+		  	</if>
+    </set>
+    where a.id = #{id}
+  </update>
+  <!-- 修改 end -->
+  
+  <!-- 新增 start -->
+  <insert id="create" parameterType="Activity" 
+  			useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+  	INSERT INTO ACT_ACTIVITY(
+		  		NAME,
+		  		CREATE_TIME,
+		  		DATE_FROM,
+		  		DATE_TO,
+		  		IS_DELETED,
+		  		REMARK,
+		  		STATUS,
+		  		TOTAL_NUM,
+		  		IS_REBUILD
+		) VALUES (
+		  		#{name},
+		  		#{createTime},
+		  		#{dateFrom},
+		  		#{dateTo},
+		  		#{isDeleted},
+		  		#{remark},
+		  		#{status},
+		  		#{totalNum},
+		  		#{isRebuild}
+		)
+	</insert>
+   <!-- 新增 end -->
+   
+   	<select id="findList" resultMap="actResultMap">
+		SELECT 
+			<include refid="base_columns"/>
+		FROM act_activity a
+		<where>
+			<if test="code != null and code != ''">
+				AND a.code LIKE '%'||#{code}||'%'
+			</if>
+		</where>
+		ORDER BY a.date_from, a.date_to
+	</select>
+    <select id="findStaffPushList" resultType="com.wlzq.activity.push.dto.StaffPushDto">
+		select c.user_name customerName, a.RECOMMEND_MOBILE as recommendMobile,a.order_no orderNo
+			from service_invest_adviser_order a
+			left join service_invest_adviser_product b on a.product_code = b.code
+			LEFT JOIN acc_customer c ON a.customer_id = c.customer_id
+		where b.type = 2
+			and a.status = 1
+			and a.type = 1
+			and a.RECOMMEND_MOBILE is not NULL
+			and a.UPDATE_TIME >= to_date(#{startTime}, 'yyyy-mm-dd hh24:mi:ss')
+			and a.UPDATE_TIME <![CDATA[<]]>= to_date(#{endTime}, 'yyyy-mm-dd hh24:mi:ss')
+	</select>
+	<select id="findBranchStaff" resultType="com.wlzq.activity.push.dto.StaffPushDto">
+		SELECT distinct a.third_uid openId,b.MOBILE ,b.EKP_NAME ekpName
+		FROM acc_user_bind a
+		LEFT JOIN acc_ekp_info b ON a.value = b.ekp_account
+		WHERE (b.ous like '%分公司' or b.ous like '%营业部' ) and a.status = 1
+	</select>
+
+	<select id="findListByGroupCode" resultMap="actResultMap">
+		SELECT
+		<include refid="base_columns"/>
+		FROM act_activity a
+		<where>
+			<if test="groupCode != null and groupCode != ''">
+				AND a.group_code = #{groupCode}
+			</if>
+		</where>
+		ORDER BY a.date_from asc, a.date_to asc
+	</select>
+
+</mapper>

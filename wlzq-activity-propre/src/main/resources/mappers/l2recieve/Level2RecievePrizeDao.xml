@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.l2recieve.dao.Level2RecievePrizeDao">
+    
+	<sql id="level2RecievePrizeColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.product_id as "productId",
+		a.goods_id AS "goodsId",
+		a.create_time AS "createTime",
+		a.goods_name AS "goodsName",
+		a.goods_time AS "goodsTime",
+		a.time_type AS "timeType"
+	</sql>
+	
+	<sql id="level2RecievePrizeJoins">
+	</sql>
+    
+	<select id="get" resultType="Level2RecievePrize">
+		SELECT 
+			<include refid="level2RecievePrizeColumns"/>
+		FROM act_level2_recieve_prize a
+		<include refid="level2RecievePrizeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findPrize" resultType="Level2RecievePrize">
+		SELECT 
+			<include refid="level2RecievePrizeColumns"/>
+		FROM act_level2_recieve_prize a
+		<include refid="level2RecievePrizeJoins"/>
+		WHERE a.type = #{type}
+		and rownum = 1
+	</select>
+	
+	<select id="findList" resultType="Level2RecievePrize">
+		SELECT 
+			<include refid="level2RecievePrizeColumns"/>
+		FROM act_level2_recieve_prize a
+		<include refid="level2RecievePrizeJoins"/>
+		<where>
+			
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="goodsId != null and goodsId != ''">
+				AND a.goods_id = #{goodsId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="Level2RecievePrize">
+		SELECT 
+			<include refid="level2RecievePrizeColumns"/>
+		FROM act_level2_recieve_prize a
+		<include refid="level2RecievePrizeJoins"/>
+		<where>
+			
+		</where>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_level2_recieve_prize(
+			id,
+			type,
+			product_id,
+			goods_id,
+			create_time,
+			goods_name,
+			goods_time,
+			time_type
+		) VALUES (
+			#{id},
+			#{type},
+			#{productId},
+			#{goodsId},
+			#{createTime},
+			#{goodsName},
+			#{goodsTime},
+			#{timeType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_level2_recieve_prize SET 	
+			type = #{type},
+			product_id = #{productId},
+			goods_id = #{goodsId},
+			create_time = #{createTime},
+			goods_name = #{goodsName},
+			goods_time = #{goodsTime},
+			time_type = #{timeType}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_level2_recieve_prize
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

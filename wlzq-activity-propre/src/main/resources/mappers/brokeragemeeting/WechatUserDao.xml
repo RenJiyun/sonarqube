@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.brokeragemeeting.dao.WechatUserDao">
+    
+	<sql id="wechatUserColumns">
+		a.id AS "id",
+		a.open_id AS "openid",
+		a.union_id AS "unionid",
+		a.user_id AS "userId",
+		a.nick_name AS "nickname",
+		a.head_image_url AS "headimgurl",
+		a.is_bind AS "isBind",
+		a.create_time AS "createTime",
+		a.is_deleted AS "isDeleted",
+		a.subscribe AS "subscribe",
+		a.sex AS "sex",
+		a.subscribe_time AS "subscribe_time",
+		a.province AS "province",
+		a.city AS "city",
+		a.groupid AS "groupid",
+		a.tagid_list AS "tagid_list"
+	</sql>
+    
+	<select id="get" resultType="WechatUser">
+		SELECT 
+			<include refid="wechatUserColumns"/>
+		FROM wechat_user a
+		
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findByOpenId" resultType="WechatUser">
+		SELECT 
+			<include refid="wechatUserColumns"/>
+		FROM wechat_user a
+		
+		WHERE a.open_id = #{openid}
+	</select>
+	
+	<select id="findList" resultType="WechatUser">
+		SELECT 
+			<include refid="wechatUserColumns"/>
+		FROM wechat_user a
+		
+		<where>
+			
+			<if test="openid != null and openid != ''">
+				AND a.open_id = #{openid}
+			</if>
+			<if test="nickname != null and nickname != ''">
+				AND a.nick_name = #{nickname}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="WechatUser">
+		SELECT 
+			<include refid="wechatUserColumns"/>
+		FROM wechat_user a
+		
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO wechat_user(
+			id,
+			open_id,
+			union_id,
+			user_id,
+			nick_name,
+			head_image_url,
+			is_bind,
+			create_time,
+			is_deleted,
+			subscribe,
+			sex,
+			subscribe_time,
+			province,
+			city,
+			groupid,
+			tagid_list
+		) VALUES (
+			#{id,jdbcType=INTEGER},
+			#{openid,jdbcType=VARCHAR},
+			#{unionid,jdbcType=VARCHAR},
+			#{userId,jdbcType=VARCHAR},
+			#{nickname,jdbcType=VARCHAR},
+			#{headimgurl,jdbcType=VARCHAR},
+			#{isBind,jdbcType=INTEGER},
+			#{createTime,jdbcType=TIMESTAMP},
+			#{isDeleted,jdbcType=INTEGER},
+			#{subscribe,jdbcType=INTEGER},
+			#{sex,jdbcType=INTEGER},
+			#{subscribe_time,jdbcType=TIMESTAMP},
+			#{province,jdbcType=VARCHAR},
+			#{city,jdbcType=VARCHAR},
+			#{groupid,jdbcType=VARCHAR},
+			#{tagid_list,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE wechat_user SET 	
+			open_id = #{openid,jdbcType=VARCHAR},
+			union_id = #{unionid,jdbcType=VARCHAR},
+			user_id = #{userId,jdbcType=VARCHAR},
+			nick_name = #{nickname,jdbcType=VARCHAR},
+			head_image_url = #{headimgurl,jdbcType=VARCHAR},
+			is_bind = #{isBind,jdbcType=INTEGER},
+			create_time = #{createTime,jdbcType=TIMESTAMP},
+			subscribe = #{subscribe,jdbcType=INTEGER},
+			sex = #{sex,jdbcType=INTEGER},
+			subscribe_time = #{subscribe_time,jdbcType=TIMESTAMP},
+			province = #{province,jdbcType=VARCHAR},
+			city = #{city,jdbcType=VARCHAR},
+			groupid = #{groupid,jdbcType=VARCHAR},
+			tagid_list = #{tagid_list,jdbcType=VARCHAR}
+		WHERE id = #{id,jdbcType=INTEGER}
+	</update>
+	
+	<update id="updateByOpenId">
+		UPDATE wechat_user SET 	
+			union_id = #{unionid,jdbcType=VARCHAR},
+			user_id = #{userId,jdbcType=VARCHAR},
+			nick_name = #{nickname,jdbcType=VARCHAR},
+			head_image_url = #{headimgurl,jdbcType=VARCHAR},
+			is_bind = #{isBind,jdbcType=INTEGER},
+			create_time = #{createTime,jdbcType=TIMESTAMP},
+			subscribe = #{subscribe,jdbcType=INTEGER},
+			sex = #{sex,jdbcType=INTEGER},
+			subscribe_time = #{subscribe_time,jdbcType=TIMESTAMP},
+			province = #{province,jdbcType=VARCHAR},
+			city = #{city,jdbcType=VARCHAR},
+			groupid = #{groupid,jdbcType=VARCHAR},
+			tagid_list = #{tagid_list,jdbcType=VARCHAR}
+		WHERE open_id = #{openid,jdbcType=VARCHAR}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM wechat_user
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

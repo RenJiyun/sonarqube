@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.l2recieve.dao.Level2RecieveUserDao">
+   
+   <resultMap id="customer" type="com.wlzq.activity.l2recieve.model.Level2RecieveUser">
+	  <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+	  <result property="effectiveDate" column="effectiveDate" jdbcType="TIMESTAMP"/>
+   </resultMap>
+   
+	<sql id="level2RecieveUserColumns">
+		a.id AS "id",
+		a.custmer_id AS "custmerId",
+		a.mobile AS "mobile",
+		a.type AS "type",
+		a.effective_date AS "effectiveDate",
+		a.create_time AS "createTime"
+	</sql>
+	
+	<sql id="level2RecieveUserJoins">
+	</sql>
+    
+	<select id="get" resultMap="customer">
+		SELECT 
+			<include refid="level2RecieveUserColumns"/>
+		FROM act_level2_recieve_user a
+		<include refid="level2RecieveUserJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findCustomer" resultMap="customer">
+		select * from (
+			SELECT 
+				<include refid="level2RecieveUserColumns"/>
+			FROM act_level2_recieve_user a
+			<include refid="level2RecieveUserJoins"/>
+			WHERE a.type = #{type}
+			and a.mobile = #{mobile}
+			order by a.effective_date desc
+		)
+		where rownum = 1
+	</select>
+	
+	<select id="findList" resultMap="customer">
+		SELECT 
+			<include refid="level2RecieveUserColumns"/>
+		FROM act_level2_recieve_user a
+		<include refid="level2RecieveUserJoins"/>
+		<where>
+			
+			<if test="custmerId != null and custmerId != ''">
+				AND a.custmer_id = #{custmerId}
+			</if>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="effectiveDate != null and effectiveDate != ''">
+				AND a.effective_date = #{effectiveDate}
+			</if>
+			<if test="effectiveDateBegin != null and effectiveDateEnd != null">
+				AND a.effective_date BETWEEN #{effectiveDateBegin} AND #{effectiveDateEnd}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findValidList" resultMap="customer">
+		SELECT 
+			a.mobile as "mobile",
+			a.effective_date AS "effectiveDate"
+		FROM act_level2_recieve_user a
+		<include refid="level2RecieveUserJoins"/>
+		<where>
+			
+				 a.effective_date >= #{effectiveDateBegin}
+				<![CDATA[AND a.effective_date <= #{effectiveDateEnd}]]>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultMap="customer">
+		SELECT 
+			<include refid="level2RecieveUserColumns"/>
+		FROM act_level2_recieve_user a
+		<include refid="level2RecieveUserJoins"/>
+		<where>
+			
+		</where>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_level2_recieve_user(
+			id,
+			custmer_id,
+			mobile,
+			type,
+			effective_date,
+			create_time
+		) VALUES (
+			#{id},
+			#{custmerId},
+			#{mobile},
+			#{type},
+			#{effectiveDate},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_level2_recieve_user SET 	
+			custmer_id = #{custmerId},
+			mobile = #{mobile},
+			type = #{type},
+			effective_date = #{effectiveDate},
+			create_time = #{createTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_level2_recieve_user
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

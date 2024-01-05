@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.virtualfin.dao.ActFirstLoginDao">
+    
+	<sql id="actFirstLoginColumns">
+		a.id AS "id",
+		a.mobile AS "mobile",
+		a.user_id AS "userId",
+		a.open_id AS "openId",
+		a.customer_id AS "customerId",
+		a.activity_code AS "activityCode",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.is_deleted AS "isDeleted"
+	</sql>
+	
+	<sql id="actFirstLoginJoins">
+	</sql>
+    
+	<select id="get" resultType="ActFirstLogin">
+		SELECT 
+			<include refid="actFirstLoginColumns"/>
+		FROM act_first_login a
+		<include refid="actFirstLoginJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActFirstLogin">
+		SELECT 
+			<include refid="actFirstLoginColumns"/>
+		FROM act_first_login a
+		<include refid="actFirstLoginJoins"/>
+		<where>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+			<if test="activityCode != null and activityCode != ''">
+				AND a.activity_code = #{activityCode}
+			</if>
+		</where>
+		ORDER BY a.id DESC
+	</select>
+	
+	<select id="findAllList" resultType="ActFirstLogin">
+		SELECT 
+			<include refid="actFirstLoginColumns"/>
+		FROM act_first_login a
+		<include refid="actFirstLoginJoins"/>
+		<where>
+			
+		</where>		
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_first_login(
+			mobile,
+			user_id,
+			open_id,
+			customer_id,
+			activity_code,
+			create_time
+		) VALUES (
+			#{mobile, jdbcType=VARCHAR},
+			#{userId, jdbcType=VARCHAR},
+			#{openId, jdbcType=VARCHAR},
+			#{customerId, jdbcType=VARCHAR},
+			#{activityCode, jdbcType=VARCHAR},
+			#{createTime, jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_first_login SET 	
+			mobile = #{mobile, jdbcType=VARCHAR},
+			user_id = #{userId, jdbcType=VARCHAR},
+			open_id = #{openId, jdbcType=VARCHAR},
+			customer_id = #{customerId, jdbcType=VARCHAR},
+			activity_code = #{activityCode, jdbcType=VARCHAR},
+			update_time = #{updateTime, jdbcType=TIMESTAMP},
+			is_deleted = #{isDeleted, jdbcType=INTEGER}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_first_login
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.expoturntable.dao.ActFinexpo19ShakeDao">
+    
+	<sql id="actFinexpo19ShakeColumns">
+		a.id AS "id",
+		a.scene AS "scene",
+		a.user_id AS "userId",
+		a.total_count AS "totalCount",
+		a.status AS "status",
+		a.last_count AS "lastCount",
+		a.counts AS "counts",
+		a.signin_id AS "signinId",
+		a.id AS "playerId",
+		b.nick_name AS "nickName",
+		b.portrait AS "portrait"
+	</sql>
+	
+	<sql id="actFinexpo19ShakeJoins">
+		LEFT JOIN acc_user b ON b.user_id = a.user_id
+	</sql>
+    
+	<select id="get" resultType="ActFinexpo19Shake">
+		SELECT 
+			<include refid="actFinexpo19ShakeColumns"/>
+		FROM act_finexpo19_shake a
+		<include refid="actFinexpo19ShakeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActFinexpo19Shake">
+		SELECT 
+			<include refid="actFinexpo19ShakeColumns"/>
+		FROM act_finexpo19_shake a
+		<include refid="actFinexpo19ShakeJoins"/>
+		<where>
+			
+			<if test="scene != null and scene != ''">
+				AND a.scene = #{scene}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="signinId != null and signinId != ''">
+				AND a.signin_id = #{signinId}
+			</if>
+		</where>
+		ORDER BY a.total_count DESC,a.id
+	</select>
+	
+	<select id="findAllList" resultType="ActFinexpo19Shake">
+		SELECT 
+			<include refid="actFinexpo19ShakeColumns"/>
+		FROM act_finexpo19_shake a
+		<include refid="actFinexpo19ShakeJoins"/>
+		<where>
+			
+		</where>		
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_finexpo19_shake(
+			scene,
+			user_id,
+			total_count,
+			status,
+			last_count,
+			counts,
+			signin_id
+		) VALUES (
+			#{scene, jdbcType=INTEGER},
+			#{userId, jdbcType=VARCHAR},
+			#{totalCount, jdbcType=INTEGER},
+			#{status, jdbcType=INTEGER},
+			#{lastCount, jdbcType=INTEGER},
+			#{counts, jdbcType=VARCHAR},
+			#{signinId, jdbcType=INTEGER}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_finexpo19_shake SET 	
+			scene = #{scene, jdbcType=INTEGER},
+			user_id = #{userId, jdbcType=VARCHAR},
+			total_count = #{totalCount, jdbcType=INTEGER},
+			status = #{status, jdbcType=INTEGER},
+			last_count = #{lastCount, jdbcType=INTEGER},
+			counts = #{counts, jdbcType=VARCHAR},
+			signin_id = #{signinId, jdbcType=INTEGER}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_finexpo19_shake
+		WHERE id = #{id}
+	</update>
+	
+	<select id="getSum" resultType="java.lang.Integer">
+		SELECT 
+			 ROUND(SUM(a.last_count)/COUNT(1))
+		FROM act_finexpo19_shake a
+		<where>
+			AND a.status = 1
+			<if test="scene != null and scene != ''">
+				AND a.scene = #{scene}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+		</where>
+		<!-- ORDER BY a.total_count DESC,a.id -->
+	</select>
+	
+	<update id="updateInvalid">
+		UPDATE act_finexpo19_shake SET 	
+			status = 0
+		WHERE id > 0
+	</update>
+	
+	<select id="findListByPlayerIds" resultType="java.util.Map">
+		SELECT 
+			a.id AS "playerId",
+			b.nick_name AS "nickName",
+			b.portrait AS "headImageUrl"
+		FROM act_finexpo19_shake a
+		<include refid="actFinexpo19ShakeJoins"/>
+		<where>
+			
+			<if test="playerIds != null">
+				AND a.id IN 
+				<foreach  item="item" collection="playerIds" index="index"  open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		ORDER BY a.total_count DESC,a.id
+	</select>
+	
+	<select id="findSigninListCodeNotNull" resultType="java.util.Map">
+		SELECT * FROM (
+			SELECT 
+				a.id AS "signInCode"
+				,b.nick_name AS "nickName"
+				,b.portrait AS "headImageUrl"
+			FROM act_finexpo19_shake a
+			LEFT JOIN acc_user b ON a.user_id = b.user_id
+			<where>
+			    1=1
+				AND a.status = 1
+				<if test="scene != null and scene != ''">
+					AND a.scene = #{scene}
+				</if>
+				AND (b.is_deleted IS NULL OR (b.is_deleted IS NOT NULL AND b.is_deleted = 0))
+				<if test="maxOrder != null and maxOrder != ''">
+					AND a.id > #{maxOrder}
+				</if>
+			</where>
+			ORDER BY a.id) t 
+		<if test="maxLength != null and maxLength != ''">
+			WHERE rownum <![CDATA[ <= ]]> #{maxLength}
+		</if>
+	</select>
+	
+</mapper>

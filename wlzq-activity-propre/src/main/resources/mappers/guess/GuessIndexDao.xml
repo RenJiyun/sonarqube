@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.guess.dao.GuesssIndexDao">
+
+	<sql id="guessIndexColumns">
+		a.id AS "id",
+		a.open AS "open",
+		a.close AS "close",
+		a.index_date AS "indexDate",
+		a.create_time AS "createTime",
+		a.remark AS "remark"
+	</sql>
+
+	<sql id="guessIndexJoins">
+	</sql>
+
+	<select id="get" resultType="GuesssIndex">
+		SELECT
+			<include refid="guessIndexColumns"/>
+		FROM act_guess_index a
+		<include refid="guessIndexJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findIndex" resultType="GuesssIndex">
+		SELECT
+			<include refid="guessIndexColumns"/>
+		FROM act_guess_index a
+		<include refid="guessIndexJoins"/>
+		WHERE a.index_date = #{indexDate}
+		and a.type =  #{type}
+	</select>
+
+
+	<select id="findList" resultType="GuesssIndex">
+		SELECT
+			<include refid="guessIndexColumns"/>
+		FROM act_guess_index a
+		<include refid="guessIndexJoins"/>
+		<where>
+
+			<if test="indexDate != null and indexDate != ''">
+				AND a.index_date = #{indexDate}
+			</if>
+		</where>
+	</select>
+
+	<select id="findAllList" resultType="GuesssIndex">
+		SELECT
+			<include refid="guessIndexColumns"/>
+		FROM act_guess_index a
+		<include refid="guessIndexJoins"/>
+		<where>
+
+		</where>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO act_guess_index(
+			type,
+			open,
+			"CLOSE",
+			index_date,
+			create_time,
+			remark
+		) VALUES (
+			#{type},
+			#{open},
+			#{close},
+			#{indexDate},
+			#{createTime},
+			#{remark,jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE act_guess_index SET
+			open = #{open},
+			"CLOSE" = #{close},
+			index_date = #{indexDate},
+			remark = #{remark,jdbcType=VARCHAR}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		DELETE FROM act_guess_index
+		WHERE id = #{id}
+	</update>
+
+</mapper>

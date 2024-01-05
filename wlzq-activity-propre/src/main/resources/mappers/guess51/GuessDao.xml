@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.guess51.dao.GuessDao">
+    
+    <resultMap id="guess" type="com.wlzq.activity.guess51.model.Guess">
+	  <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+	  <result property="outTime" column="outTime" jdbcType="TIMESTAMP"/>
+	  <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+  	</resultMap>
+  
+	<sql id="guessColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.direction AS "direction",
+		a.use_point AS "usePoint",
+		a.guess_date AS "guessDate",
+		a.guess_no AS "guessNo",
+		a.ratio AS "ratio",
+		a.result_direction AS "resultDirection",
+		a.win_point AS "winPoint",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.remark AS "remark"
+	</sql>
+	
+	<sql id="guessJoins">
+	</sql>
+    
+	<select id="get" resultType="Guess">
+		SELECT 
+			<include refid="guessColumns"/>
+		FROM act_guess_51 a
+		<include refid="guessJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="guessCount" resultType="java.lang.Long">
+		SELECT 
+			count(a.id)
+		FROM act_guess_51 a
+		WHERE a.user_id = #{userId}
+	</select>
+	
+	<select id="findGuessStatus" resultType="GuessStatusDto">
+		select MAX(decode(a.direction, '1', NVL(sum(a.use_point),0), null)) as "upPoint",
+		       MAX(decode(a.direction, '0', NVL(sum(a.use_point),0), null)) as "downPoint"
+		  from act_guess_51 a
+		 where a.guess_date =  #{guessDate}
+		  and a.guess_no =  #{guessNo}
+		 group by a.direction
+	</select>
+	
+	<select id="findGuessCount" resultType="GuessStatusDto">
+		select MAX(decode(a.direction, '1', count(a.id))) as "upCount",
+           MAX(decode(a.direction, '0', count(a.id))) as "downCount"
+	     from act_guess_51 a
+		 where a.guess_date =  #{guessDate}
+		  and a.guess_no =  #{guessNo}
+	     group by a.direction
+	</select>
+	
+	<select id="findUnsettlement" resultMap="guess">
+		select *
+		  from (select row_.*, rownum rownum_
+		          from (
+					SELECT 
+						<include refid="guessColumns"/>
+					FROM act_guess_51 a
+					<include refid="guessJoins"/>
+					where
+						 a.result_direction is null
+						and a.guess_date = #{guessDate}
+						and a.guess_no = #{guessNo}
+					order by a.id
+				) row_
+		         WHERE <![CDATA[ rownum <= #{end} ]]>
+		        ) 
+		 WHERE rownum_ > #{start}
+	</select>
+	
+	<select id="findPage" resultMap="guess">
+		select *
+		  from (select row_.*, rownum rownum_
+		          from (
+						SELECT 
+							<include refid="guessColumns"/>
+						FROM act_guess_51 a
+						where
+						 a.user_id = #{userId}
+						order by a.id desc
+					) row_
+				         WHERE <![CDATA[ rownum <= #{end} ]]>
+		        ) 
+		 WHERE rownum_ > #{start}
+	</select>
+		
+	<select id="findLastGuess" resultMap="guess">
+		select *
+		  from (select row_.*, rownum rownum_
+		          from (
+					SELECT 
+						<include refid="guessColumns"/>
+					FROM act_guess_51 a
+					<include refid="guessJoins"/>
+					where
+						 a.user_id = #{userId}
+						<![CDATA[ and a.create_time < #{createTime} ]]>
+					order by a.create_time desc
+				) row_
+		        ) 
+		 WHERE rownum_ = 1
+	</select>
+	
+	<select id="findList" resultType="Guess">
+		SELECT 
+			<include refid="guessColumns"/>
+		FROM act_guess_51 a
+		<include refid="guessJoins"/>
+		<where>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="guessDate != null and guessDate != ''">
+				and a.guess_date = #{guessDate}
+			</if>
+			<if test="guessNo != null and guessNo != ''">
+				and a.guess_no = #{guessNo}
+			</if>
+		</where>	
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_guess_51(
+			user_id,
+			direction,
+			use_point,
+			guess_date,
+			guess_no,
+			create_time,
+			remark
+		) VALUES (
+			#{userId},
+			#{direction},
+			#{usePoint},
+			#{guessDate},
+			#{guessNo},
+			#{createTime},
+			#{remark,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_guess_51 SET 
+			ratio = #{ratio},
+			result_direction = #{resultDirection},
+			win_point = #{winPoint},
+			update_time = #{updateTime,jdbcType=TIMESTAMP},
+			remark = #{remark,jdbcType=VARCHAR}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.bill.dao.ActReceiveRegDao">
+    <resultMap type="com.wlzq.activity.bill.model.ActReceiveReg" id="resultMap">
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="columns">
+        a.id AS "id",
+        a.user_id AS "userId",
+        a.customer_id AS "customerId",
+        a.mobile AS "mobile",
+        a.activity_code AS "activityCode",
+        a.status AS "status",
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime"
+    </sql>
+
+    <select id="findList" resultMap="resultMap">
+        SELECT
+        <include refid="columns"/>
+        FROM ACT_RECEIVE_REG a
+        <where>
+            <if test="customerId != null and customerId != ''">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="activityCode != null and activityCode != ''">
+                AND a.activity_code = #{activityCode}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        </where>
+        ORDER BY a.id DESC
+    </select>
+
+
+    <update id="update">
+        UPDATE ACT_RECEIVE_REG
+        SET status      = #{status,jdbcType=INTEGER},
+            user_id     = #{userId,jdbcType=VARCHAR},
+            mobile      = #{mobile,jdbcType=VARCHAR},
+            UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP}
+        WHERE id = #{id}
+    </update>
+
+
+    <insert id="insert" useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+        INSERT INTO ACT_RECEIVE_REG(USER_ID,
+                                    CUSTOMER_ID,
+                                    MOBILE,
+                                    ACTIVITY_CODE,
+                                    STATUS,
+                                    CREATE_TIME)
+        VALUES (#{userId,jdbcType=VARCHAR},
+                #{customerId,jdbcType=VARCHAR},
+                #{mobile,jdbcType=VARCHAR},
+                #{activityCode,jdbcType=VARCHAR},
+                #{status,jdbcType=INTEGER},
+                #{createTime,jdbcType=TIMESTAMP})
+    </insert>
+
+</mapper>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.base.dao.ActShareDao">
+    
+	<sql id="actShareColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.activity AS "activity",
+		a.user_id AS "userId",
+		a.openid AS "openid",
+		a.customer_id AS "customerId",
+		a.create_time AS "createTime",
+		a.is_use AS "isUse"
+	</sql>
+	
+	<sql id="actShareJoins">
+	</sql>
+    
+	<select id="get" resultType="ActShare">
+		SELECT 
+			<include refid="actShareColumns"/>
+		FROM act_share a
+		<include refid="actShareJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findCount" resultType="java.lang.Integer">
+		SELECT 
+			count(*)
+		FROM act_share a
+		<include refid="actShareJoins"/>
+		<where>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="activity != null and activity != ''">
+				AND a.activity = #{activity}
+			</if>
+			<if test="userId != null and userId != '' and threeInOne != 1">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="threeInOne == 1">
+				AND (
+				<if test="userId != null and userId != ''">
+					a.user_id = #{userId}
+				</if>
+				<if test="openid != null and openid != ''">
+					OR a.openId = #{openid}
+				</if>
+				<if test="customerId != null and customerId != ''">
+					OR a.customer_id = #{customerId}
+				</if>
+				)
+			</if>
+			<if test="timeStart != null">
+				<![CDATA[AND a.create_time >= #{timeStart}]]>
+			</if>
+			<if test="timeEnd != null">
+				<![CDATA[AND a.create_time <= #{timeEnd}]]>
+			</if>
+		</where>
+	</select>
+	
+	<select id="findList" resultType="ActShare">
+		SELECT 
+			<include refid="actShareColumns"/>
+		FROM act_share a
+		<include refid="actShareJoins"/>
+		<where>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="activity != null and activity != ''">
+				AND a.activity = #{activity}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="timeStart != null">
+				AND a.create_time >= #{timeStart}
+			</if>
+			<if test="timeEnd != null">
+				<![CDATA[AND a.create_time <= #{timeEnd}]]>
+			</if>
+			<if test="isUse != null">
+				AND a.is_use = #{isUse}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="ActShare">
+		SELECT 
+			<include refid="actShareColumns"/>
+		FROM act_share a
+		<include refid="actShareJoins"/>
+		<where>
+			
+		</where>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_share(
+			type,
+			activity,
+			user_id,
+			openid,
+			customer_id,
+			create_time
+		) VALUES (
+			#{type},
+			#{activity},
+			#{userId},
+			#{openid,jdbcType=VARCHAR},
+			#{customerId,jdbcType=VARCHAR},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_share SET 	
+			type = #{type},
+			activity = #{activity},
+			user_id = #{userId},
+			openid = #{openid,jdbcType=VARCHAR},
+			customer_id = #{customerId,jdbcType=VARCHAR},
+			create_time = #{createTime},
+			is_use = #{isUse}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_share
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

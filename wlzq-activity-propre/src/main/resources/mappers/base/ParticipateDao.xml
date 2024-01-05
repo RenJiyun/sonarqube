@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.base.dao.ParticipateDao">
+    
+	<sql id="participateColumns">
+		a.id AS "id",
+		a.activity_code AS "activityCode",
+		a.user_id AS "userId",
+		a.open_id AS "openId",
+		a.ip AS "ip",
+		a.create_time AS "createTime",
+		a.method AS "method"
+	</sql>
+	
+	<sql id="participateJoins">
+		LEFT JOIN sys_user u3 ON u3.id = a.user_id
+	</sql>
+    
+	<select id="get" resultType="Participate">
+		SELECT 
+			<include refid="participateColumns"/>
+		FROM act_participate a
+		<include refid="participateJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Participate">
+		SELECT 
+			<include refid="participateColumns"/>
+		FROM act_participate a
+		<include refid="participateJoins"/>
+		<where>
+			
+			<if test="activityCode != null and activityCode != ''">
+				AND a.activity_code = #{activityCode}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="openId != null and openId != ''">
+				AND a.open_id = #{openId}
+			</if>
+			<if test="ip != null and ip != ''">
+				AND a.ip = #{ip}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findParticipateCount" resultType="java.lang.Long">
+		SELECT 
+			count(*)
+		FROM act_participate a
+		WHERE 
+		a.create_time >= #{createTimeFrom}
+		and <![CDATA[  a.create_time <= #{createTimeTo}]]>
+	</select>
+	
+	<select id="findAllList" resultType="Participate">
+		SELECT 
+			<include refid="participateColumns"/>
+		FROM act_participate a
+		<include refid="participateJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" >
+		INSERT INTO act_participate(
+			activity_code,
+			user_id,
+			open_id,
+			ip,
+			create_time,
+			method
+		) VALUES (
+			#{activityCode},
+			#{userId},
+			#{openId, jdbcType=VARCHAR},
+			#{ip},
+			#{createTime},
+			#{method}
+		)
+	</insert>
+	
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.bill.dao.ActBill2023Dao">
+
+    <sql id="columns">
+        a.client_id as "clientId",
+        a.organ_flag as "organFlag",
+        a.login_days as "loginDays",
+        trim(TO_CHAR(a.login_outperform_ratio, '9999999990.99')) as "loginOutperformRatio",
+        trim(TO_CHAR(a.max_asset, '9999999990.99')) as "maxAsset",
+        trim(TO_CHAR(a.avg_asset, '9999999990.99')) as "avgAsset",
+        trim(TO_CHAR(a.avg_gp_mkt, '9999999990.99')) as "avgGpMkt",
+        trim(TO_CHAR(a.avg_fin_mkt, '9999999990.99')) as "avgFinMkt",
+        trim(TO_CHAR(a.avg_zq_mkt, '9999999990.99')) as "avgZqMkt",
+        trim(TO_CHAR(a.avg_fund, '9999999990.99')) as "avgFund",
+        trim(TO_CHAR(a.avg_qt_mkt, '9999999990.99')) as "avgQtMkt",
+        trim(TO_CHAR(a.sum_profit, '9999999990.99')) as "sumProfit",
+        trim(TO_CHAR(a.profit_outperform_ratio, '9999999990.99')) as "profitOutperformRatio",
+        a.max_profit_scr_type as "maxProfitScrType",
+        a.max_profit_dt as "maxProfitDt",
+        trim(TO_CHAR(a.max_profit, '9999999990.99')) as "maxProfit",
+        trim(TO_CHAR(a.sum_profit_gp, '9999999990.99')) as "sumProfitGp",
+        a.max_profit_ym_dt as "maxProfitYmDt",
+        trim(TO_CHAR(a.max_profit_ym, '9999999990.99')) as "maxProfitYm",
+        a.holder_gp_q as "holderGpQ",
+        a.max_profit_gp_name as "maxProfitGpName",
+        trim(TO_CHAR(a.max_profit_gp, '9999999990.99')) as "maxProfitGp",
+        a.min_profit_gp_name as "minProfitGpName",
+        trim(TO_CHAR(a.min_profit_gp, '9999999990.99')) as "minProfitGp",
+        a.trd_cnt as "trdCnt",
+        a.trd_cnt_avg_wl as "trdCntAvgWl",
+        a.top_three_trd_cnt_scr_name as "topThreeTrdCntScrName",
+        a.ipo_entrust_times as "ipoEntrustTimes",
+        a.ipo_scr_p_times as "ipoScrpTimes",
+        trim(TO_CHAR(a.ipo_outperform_ratio, '9999999990.99')) as "ipoOutperformRatio",
+        trim(TO_CHAR(a.sum_fin_profit, '9999999990.99')) as "sumFinProfit",
+        a.holder_fin_q as "holderFinQ",
+        a.max_profit_fin_name as "maxProfitFinName",
+        trim(TO_CHAR(a.max_profit_fin, '9999999990.99')) as "maxProfitFin"
+    </sql>
+
+    <select id="findBillByCustomerId" resultType="com.wlzq.activity.bill.model.ActBill2023">
+        SELECT
+        <include refid="columns"/>
+        FROM ACT_ANNUAL_BILL_2023_CLIENT a
+        WHERE a.client_id = #{customerId}
+    </select>
+
+</mapper>

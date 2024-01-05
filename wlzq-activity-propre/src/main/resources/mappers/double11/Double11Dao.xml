@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.double11.dao.Double11Dao">
+
+	<resultMap type="com.wlzq.activity.double11.dto.PersonalSprintAward" id="personalSprintAwardMap">
+		<result property="payTime" column="payTime" jdbcType="TIMESTAMP"/>
+	</resultMap>
+
+	<resultMap type="com.wlzq.activity.double11.dto.PersonalOutbreakAward" id="personalOutbreakAwardMap">
+		<result property="payTime" column="payTime" jdbcType="TIMESTAMP"/>
+	</resultMap>
+
+	<resultMap type="com.wlzq.activity.double11.dto.ThsAdviserTeamSprintAward" id="thsAdviserTeamSprintAwardMap">
+		<result property="bookTime" column="bookTime" jdbcType="TIMESTAMP"/>
+	</resultMap>
+
+	<resultMap type="com.wlzq.activity.double11.dto.ThsAdviserTeamOutbreakAward" id="thsAdviserTeamOutbreakAwardMap">
+		<result property="bookTime" column="bookTime" jdbcType="TIMESTAMP"/>
+	</resultMap>
+
+	<resultMap type="com.wlzq.activity.double11.dto.DecisionSaleCommunicationAward" id="decisionSaleCommunicationAwardMap">
+		<result property="payTime" column="payTime" jdbcType="TIMESTAMP"/>
+	</resultMap>
+
+
+	<select id="findPersonalSprintAwardList" resultMap="personalSprintAwardMap">
+		select
+		rownum as sort,
+		case
+		when rownum = 1 then 200
+		when rownum >1 and rownum <![CDATA[ <= ]]> 10 then 100
+		when rownum <![CDATA[ >= ]]>  11 and rownum <![CDATA[<= ]]>  30 then 60
+		when rownum <![CDATA[ >= ]]>  31 and rownum <![CDATA[<= ]]> 50 then 40
+		end as reward,
+		t.*
+		from (
+			select
+				a.update_time as payTime,
+				a.CUSTOMER_ID as customerId,
+				c.name as productName,
+				a.product_code as productCode,
+				a.RECOMMEND_NAME as recommendName,
+				a.RECOMMEND_MOBILE as recommendMobile,
+				a.RECOMMEND_OFFICE_ID as recommendOfficeId,
+				a.out_trade_no as outTradeNo,
+		        TO_NUMBER(to_char(a.total_fee/100, 'FM999999999990.00')) as totalFee,
+				b.shortname as recommendOfficeName,
+				row_number() over(partition by a.CUSTOMER_ID order by a.update_time asc) rn
+			from service_invest_adviser_order a
+				left join base_branch b on a.RECOMMEND_OFFICE_ID=b.branchno
+				left join service_invest_adviser_product c on a.product_code = c.code
+			where
+			  c.type=2 and a.status =1 and a.total_fee <![CDATA[ >= ]]> 30000 and a.RECOMMEND_MOBILE is not null
+			  and a.update_time <![CDATA[ >= ]]> #{beginDate} and a.update_time <![CDATA[<= ]]> #{endDate}
+			order by a.update_time,a.total_fee desc,a.out_trade_no
+		) t
+		where rn=1 and rownum <![CDATA[ <= ]]> 50
+	</select>
+
+	<select id="findPersonalOutbreakAwardList"
+			resultMap="personalOutbreakAwardMap">
+		select
+		rownum as sort,
+		case
+		when rownum = 1 and cumulativePerformance <![CDATA[>=]]> 1000000 then 1500
+		when rownum = 2 and cumulativePerformance <![CDATA[>=]]> 1000000 then 1000
+		when rownum = 3 and cumulativePerformance <![CDATA[>=]]> 1000000 then 600
+		end as reward,
+		t.*
+		from (
+			select
+		        TO_NUMBER(to_char(sum(nvl(a.total_fee,0)/100), 'FM999999999990.00')) as cumulativePerformance,
+		        max(a.update_time) as payTime,
+				a.RECOMMEND_MOBILE as recommendMobile,
+				a.RECOMMEND_NAME as recommendName,
+				a.RECOMMEND_OFFICE_ID as recommendOfficeId,
+				b.shortname as recommendOfficeName
+			from service_invest_adviser_order a
+				left join base_branch b on a.RECOMMEND_OFFICE_ID=b.branchno
+				left join service_invest_adviser_product c on a.product_code = c.code
+			where
+		         c.type=2 and a.status =1 and a.RECOMMEND_MOBILE is not null
+				and a.update_time <![CDATA[ >= ]]> #{beginDate} and a.update_time <![CDATA[<= ]]> #{endDate}
+		group by a.RECOMMEND_MOBILE, a.RECOMMEND_NAME, a.RECOMMEND_OFFICE_ID,b.shortname
+			order by cumulativePerformance desc,payTime asc
+		) t where rownum <![CDATA[<=]]> 10
+	</select>
+
+	<select id="findThsAdviserTeamSprintAwardList"
+			resultMap="thsAdviserTeamSprintAwardMap">
+		select
+		rownum as sort,
+		case
+		when rownum = 1 then 200
+		when rownum >1 and rownum <![CDATA[<=]]> 10  then 100
+		when rownum <![CDATA[>=]]>  11 and rownum <![CDATA[<=]]>  30 then 60
+		when rownum <![CDATA[>=]]>  31 and rownum <![CDATA[<=]]> 50 then 40
+		end as reward,
+		t.*
+		from (
+				select
+				a.book_time as bookTime,
+				a.product_name as productName,
+				a.order_id as orderId,
+				a.amount as amount,
+				row_number() over(partition by a.certificate order by a.book_time asc) rn
+			from service_ths_order a
+			where
+				a.order_status =1 and a.amount <![CDATA[>=]]> 499
+				and  to_date(a.book_time, 'yyyy-mm-dd hh24:mi:ss')  <![CDATA[ >= ]]> #{beginDate} and  to_date(a.book_time, 'yyyy-mm-dd hh24:mi:ss')  <![CDATA[<=]]> #{endDate}
+		    order by a.book_time,a.amount desc,a.order_id
+		) t
+		where rn=1 and rownum <![CDATA[<=50]]>
+	</select>
+
+	<select id="findThsAdviserTeamOutbreakAwardList"
+			resultMap="thsAdviserTeamOutbreakAwardMap">
+		select
+		rownum as sort,
+		case
+		when rownum = 1 and cumulativePerformance <![CDATA[>=]]> 20000 then 1500
+		when rownum = 2 and cumulativePerformance <![CDATA[>=]]> 20000 then 1000
+		when rownum = 3 and cumulativePerformance <![CDATA[>=]]> 20000 then 600
+		end as reward,
+		t.*
+		from (
+			select
+				sum(nvl(a.amount,0)) as cumulativePerformance,
+				max(a.book_time) as bookTime,
+				a.product_name as productName
+			from service_ths_order a
+
+			where
+				a.order_status =1
+				and  to_date(a.book_time, 'yyyy-mm-dd hh24:mi:ss')  <![CDATA[ >= ]]> #{beginDate} and  to_date(a.book_time, 'yyyy-mm-dd hh24:mi:ss')  <![CDATA[<=]]> #{endDate}
+			group by a.product_name
+			order by cumulativePerformance desc,bookTime asc
+		) t where rownum <![CDATA[<=]]> 10
+	</select>
+
+	<select id="findDecisionSaleCommunicationAwardList"
+			resultMap="decisionSaleCommunicationAwardMap">
+		select
+		rownum as sort,
+		case
+		when rownum <![CDATA[>=]]> 1 and rownum <![CDATA[<=]]> 5 and orderCount <![CDATA[>=]]> 20 then 1000
+		when  rownum <![CDATA[>=]]> 6 and rownum <![CDATA[<=]]> 10 and orderCount <![CDATA[>=]]> 20 then 600
+		end as reward,
+		t.*
+		from (
+			select
+				count(1) as orderCount,
+		        max(case when a.pay_time is not null then a.pay_time else a.create_time end) as payTime,
+				a.RECOMMEND_MOBILE as recommendMobile,
+				a.RECOMMEND_NAME as recommendName,
+				a.RECOMMEND_OFFICE_ID as recommendOfficeId,
+				b.shortname as recommendOfficeName
+			from vas_goods_order a
+			left join base_branch b on a.RECOMMEND_OFFICE_ID=b.branchno
+			where
+			(a.goods_code='ZTZS' or a.goods_code='CYJJ') and a.status =1 and a.RECOMMEND_MOBILE is not null
+				and ((a.pay_time is not null and a.pay_time <![CDATA[ >= ]]> #{beginDate} and a.pay_time <![CDATA[<=]]> #{endDate})
+		             or (a.pay_time is null and a.create_time <![CDATA[ >= ]]> #{beginDate} and a.create_time <![CDATA[<=]]> #{endDate}))
+			group by a.RECOMMEND_MOBILE, a.RECOMMEND_NAME, a.RECOMMEND_OFFICE_ID,b.shortname
+			order by orderCount desc,payTime asc
+		) t where rownum <![CDATA[<=]]> 10
+	</select>
+
+</mapper>

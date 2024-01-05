@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.virtualfin.dao.ActTaskDao">
+    
+	<sql id="actTaskColumns">
+		a.id AS "id",
+		a.code AS "code",
+		a.name AS "name",
+		a.describe AS "describe",
+		a.activity_code AS "activityCode",
+		a.goods_code AS "goodsCode",
+		a.goods_quantity AS "goodsQuantity",
+		a.red_envelope AS "redEnvelope",
+		a.task_type AS "taskType",
+		a.customer_task AS "customerTask",
+		a.total_num AS "totalNum",
+		a.all_total_num AS "allTotalNum",
+		a.url AS "url",
+		a.is_show AS "isShow",
+		a.status AS "status",
+		a.sort AS "sort",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.is_deleted AS "isDeleted",
+		a.remark AS "remark"
+	</sql>
+	
+	<sql id="actTaskJoins">
+	</sql>
+    
+	<select id="get" resultType="ActTask">
+		SELECT 
+			<include refid="actTaskColumns"/>
+		FROM act_task a
+		<include refid="actTaskJoins"/>
+		<where>
+			<if test="id != null">
+				AND a.id = #{id}
+			</if>
+			<if test="activityCode != null and activityCode != ''">
+				AND a.activity_code = #{activityCode}
+			</if>
+			<if test="code != null and code != ''">
+				AND a.code = #{code}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+		</where>
+	</select>
+
+	<select id="findByCode" resultType="ActTask">
+		SELECT 
+			<include refid="actTaskColumns"/>
+			,b.name AS "activityName"
+			,c.name AS "goodsName"
+		FROM act_task a
+		LEFT JOIN act_activity b ON a.activity_code = b.code
+		LEFT JOIN act_task_goods c ON a.goods_code = c.code
+		<include refid="actTaskJoins"/>
+		WHERE a.code = #{taskCode} 
+			and a.activity_code = #{activityCode} 
+			and rownum = 1
+	</select>
+		
+	<select id="findList" resultType="ActTask">
+		SELECT 
+			<include refid="actTaskColumns"/>
+			,b.name AS "activityName"
+			,c.name AS "goodsName"
+		FROM act_task a
+		LEFT JOIN act_activity b ON a.activity_code = b.code
+		LEFT JOIN act_task_goods c ON a.goods_code = c.code
+		<include refid="actTaskJoins"/>
+		<where>
+			<if test="activityCode != null and activityCode != ''">
+				AND a.activity_code = #{activityCode}
+			</if>		
+			<if test="code != null and code != ''">
+				AND a.code = #{code}
+			</if>
+			<if test="codeList != null and codeList.size() > 0">
+				AND a.code in
+				<foreach collection="codeList" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+		</where>
+		ORDER BY a.sort asc nulls last, a.id desc
+	</select>
+
+		
+	<select id="findAllList" resultType="ActTask">
+		SELECT 
+			<include refid="actTaskColumns"/>
+		FROM act_task a
+		<include refid="actTaskJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_task(
+			code,
+			name,
+			activity_code,
+			goods_code,
+			goods_quantity,
+			red_envelope,
+			task_type,
+			customer_task,
+			total_num,
+			status,
+			sort,
+			create_time
+		) VALUES (
+			#{code},
+			#{name},
+			#{activityCode},
+			#{goodsCode},
+			#{goodsQuantity},
+			#{redEnvelope},
+			#{taskType},
+			#{customerTask},
+			#{totalNum},
+			#{status},
+			#{sort},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_task SET 	
+			code = #{code},
+			name = #{name},
+			activity_code = #{activityCode},
+			goods_code = #{goodsCode},
+			goods_quantity = #{goodsQuantity},
+			red_envelope = #{redEnvelope},
+			task_type = #{taskType},
+			customer_task = #{customerTask},
+			total_num = #{totalNum},
+			status = #{status},
+			sort = #{sort},
+			update_time = #{updateTime},
+			is_deleted = #{isDeleted}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_task
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

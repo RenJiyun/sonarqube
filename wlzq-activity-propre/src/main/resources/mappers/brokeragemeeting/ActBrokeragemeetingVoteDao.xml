@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.brokeragemeeting.dao.ActBrokeragemeetingVoteDao">
+    
+	<sql id="actBrokeragemeetingVoteColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.word AS "word",
+		a.vote_count AS "voteCount",
+		a.status AS "status",
+		a.name AS "name",
+		a.nick_name AS "nickName"
+	</sql>
+	
+	<sql id="actBrokeragemeetingVoteJoins">
+	</sql>
+    
+	<select id="get" resultType="ActBrokeragemeetingVote">
+		SELECT 
+			<include refid="actBrokeragemeetingVoteColumns"/>
+		FROM act_brokeragemeeting_vote a
+		<include refid="actBrokeragemeetingVoteJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActBrokeragemeetingVote">
+		SELECT 
+			<include refid="actBrokeragemeetingVoteColumns"/>
+		FROM act_brokeragemeeting_vote a
+		<include refid="actBrokeragemeetingVoteJoins"/>
+		<where>
+			
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="word != null and word != ''">
+				AND a.word = #{word}
+			</if>
+			<if test="voteCount != null and voteCount != ''">
+				AND a.vote_count = #{voteCount}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name = #{name}
+			</if>
+			<if test="nickName != null and nickName != ''">
+				AND a.nick_name = #{nickName}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="ActBrokeragemeetingVote">
+		SELECT 
+			<include refid="actBrokeragemeetingVoteColumns"/>
+		FROM act_brokeragemeeting_vote a
+		<include refid="actBrokeragemeetingVoteJoins"/>
+		<where>
+			
+		</where>		
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_brokeragemeeting_vote(
+			user_id,
+			word,
+			vote_count,
+			status,
+			name,
+			nick_name
+		) VALUES (
+			#{userId, jdbcType=VARCHAR},
+			#{word, jdbcType=VARCHAR},
+			#{voteCount, jdbcType=INTEGER},
+			#{status, jdbcType=INTEGER},
+			#{name, jdbcType=VARCHAR},
+			#{nickName, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_brokeragemeeting_vote SET 	
+			user_id = #{userId, jdbcType=VARCHAR},
+			word = #{word, jdbcType=VARCHAR},
+			vote_count = #{voteCount, jdbcType=INTEGER},
+			status = #{status, jdbcType=INTEGER},
+			name = #{name, jdbcType=VARCHAR},
+			nick_name = #{nickName, jdbcType=VARCHAR}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_brokeragemeeting_vote
+		WHERE id = #{id}
+	</update>
+	
+	<update id="clearGameData">
+		UPDATE act_brokeragemeeting_vote SET 	
+			status = 0
+		WHERE status = 1
+	</update>
+	
+	<select id="findWordCountResult" resultType="ActBrokeragemeetingVote">
+		SELECT *
+		FROM (
+			SELECT
+	 			c.word AS "word",
+	   			c.voteCount AS "voteCount"
+			FROM (
+				SELECT 
+	      			a.word AS word,
+	      			CASE WHEN t.voteCount IS NULL THEN 0 ELSE t.voteCount END AS voteCount
+	    		FROM act_brokeragemeeting_word a
+	    		LEFT JOIN (
+	      			SELECT 
+	          			b.word AS word,
+	          			SUM(b.vote_count) AS voteCount
+	      			FROM  act_brokeragemeeting_vote b 
+	        		WHERE 1 = 1
+	        		AND b.status = 1
+	        		GROUP BY b.word) t ON a.word = t.word 
+	        	WHERE a.status = 1) c
+	    	ORDER BY c.voteCount DESC ) z
+	   	<if test="maxLength != null and maxLength != ''">
+			WHERE rownum <![CDATA[ <= ]]> #{maxLength}
+		</if>
+	</select>
+	
+	<select id="findFastResult" resultType="java.util.Map">
+		SELECT *
+		FROM (
+			SELECT 
+				t.nickName AS "nickName",
+				t.voteCount AS "voteCount",
+				t.name AS "name"
+			FROM (
+				SELECT 
+					a.user_id AS userId,
+					a.nick_name AS nickName,
+					a.name AS name,
+					SUM(a.vote_count) AS voteCount
+				FROM act_brokeragemeeting_vote a
+				WHERE a.status = 1
+				GROUP BY a.user_id,a.name,a.nick_name) t
+			WHERE 1 = 1
+			ORDER BY t.voteCount DESC) z
+	   	<if test="maxLength != null and maxLength != ''">
+			WHERE rownum <![CDATA[ <= ]]> #{maxLength}
+		</if>	
+	</select>
+	
+	<select id="findPersonNum" resultType="Integer">
+		SELECT COUNT(1) AS "personNum"
+		FROM (
+			SELECT
+				a.user_id AS userId,
+				SUM(a.vote_count) AS sumCount
+			FROM act_brokeragemeeting_vote a
+			WHERE a.status = 1
+			GROUP BY a.user_id ) b
+	</select>
+	
+	<select id="findFastRanking" resultType="java.util.Map">
+		SELECT 
+			ranking as "ranking",
+      		y.nickName AS "nickName",
+        	y.voteCount AS "voteCount",
+        	y.name AS "name"
+        FROM (
+			SELECT 
+				rownum as ranking,
+	      		z.userId AS userId,
+	      		z.nickName AS nickName,
+	        	z.voteCount AS voteCount,
+	        	z.name AS name
+			FROM (
+				SELECT
+					t.userId AS userId,
+					t.nickName AS nickName,
+					t.voteCount AS voteCount,
+					t.name AS name
+				FROM (
+					SELECT 
+						a.user_id AS userId,
+						a.name AS name,
+						a.nick_name AS nickName,
+						SUM(a.vote_count) AS voteCount
+					FROM act_brokeragemeeting_vote a
+					WHERE a.status = 1
+					GROUP BY a.user_id,a.name,a.nick_name) t
+				WHERE 1 = 1
+				ORDER BY t.voteCount DESC) z
+			) y 
+		<if test="userId != null and userId != ''">
+			WHERE y.userId = #{userId}
+		</if>	
+	</select>
+</mapper>

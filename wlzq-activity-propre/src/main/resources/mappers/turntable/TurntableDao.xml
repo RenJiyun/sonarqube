@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.turntable.dao.TurntableeDao">
+    
+	<sql id="turntableColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.is_free AS "isFree",
+		a.use_point AS "usePoint",
+		a.is_hit AS "isHit",
+		a.create_time AS "createTime"
+	</sql>
+	
+	<sql id="turntableJoins">
+	</sql>
+    
+	<select id="get" resultType="Turntablee">
+		SELECT 
+			<include refid="turntableColumns"/>
+		FROM act_turntable a
+		<include refid="turntableJoins"/>
+		WHERE a.id = #{id}
+	</select>
+		
+	<select id="turnCount" resultType="java.lang.Integer">
+		SELECT 
+			count(a.id)
+		FROM act_turntable a
+		WHERE  a.user_id = #{userId}
+		and a.create_time >= #{createTimeFrom}
+		and <![CDATA[  a.create_time <= #{createTimeTo}]]>
+	</select>
+	
+	<select id="findList" resultType="Turntablee">
+		SELECT 
+			<include refid="turntableColumns"/>
+		FROM act_turntable a
+		<include refid="turntableJoins"/>
+		<where>
+			
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="isHit != null and isHit != ''">
+				AND a.is_hit = #{isHit}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Turntablee">
+		SELECT 
+			<include refid="turntableColumns"/>
+		FROM act_turntable a
+		<include refid="turntableJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_turntable(
+			user_id,
+			is_free,
+			use_point,
+			is_hit,
+			create_time
+		) VALUES (
+			#{userId},
+			#{isFree},
+			#{usePoint},
+			#{isHit},
+			#{createTime}
+		)
+	</insert>
+	
+</mapper>

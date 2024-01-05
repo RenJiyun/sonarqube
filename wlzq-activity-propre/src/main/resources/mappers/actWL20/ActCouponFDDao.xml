@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.actWL20.dao.ActCouponFDDao">
+    
+       
+        <select id="findRecieves" resultType="ActPrize">
+			select distinct a.code,b.name 
+			from act_prize a
+			left join act_prize_type b on a.code = b.code
+			where a.activity_code = #{activityCode}
+				and a.customer_id = #{customerId}
+				  
+        </select>
+   		
+</mapper>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.voteworks.dao.VoteWorksDao">
+    
+	<sql id="voteWorksColumns">
+		a.id AS "id",
+		a.no AS "no",
+		a.tag AS "tag",
+		a.name AS "name",
+		a.department AS "department",
+		a.cover AS "cover",
+		a.thumbnail AS "thumbnail",
+		nvl(a.like_count,0) AS "likeCount",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.activitycode AS "activitycode",
+		a.aliyun_url AS "aliyunUrl",
+		a.brief AS "brief"
+	</sql>
+	
+	<sql id="voteWorksJoins">
+	</sql>
+    
+	<select id="get" resultType="VoteWorks">
+		SELECT 
+			<include refid="voteWorksColumns"/>
+		FROM act_vote_works a
+		<include refid="voteWorksJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<!-- 查询活动的所有作品总点赞数 -->
+	<select id="allLikeCount" resultType="java.lang.Long">
+		SELECT
+			NVL(SUM(a.like_count) ,0)
+		FROM act_vote_works a
+		<where>
+			<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+			<if test="activitycode != null and activitycode != ''">
+				AND a.activitycode = #{activitycode}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findByNo" resultType="VoteWorks">
+		SELECT 
+			<include refid="voteWorksColumns"/>
+			,NVL(b.hot,0) as "hot"
+		FROM act_vote_works a
+		 left join act_vote_works_hot b on a.no = b.no AND a.tag = b.tag
+		 and <![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+		 and <![CDATA[ b.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+		<where>
+			<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+			<if test="no != null and no != ''">
+				AND a.no = #{no}
+			</if>
+			<if test="tag != null">
+				AND a.tag = #{tag}
+			</if>			
+			<if test="activitycode != null and activitycode != ''">
+				AND a.activitycode = #{activitycode}
+			</if>
+		</where>
+	</select>
+	
+	<select id="ranking" resultType="VoteWorks">
+		SELECT *
+          FROM (SELECT row_.*, rownum as "order"
+				FROM (SELECT 
+							<include refid="voteWorksColumns"/>
+						FROM act_vote_works a
+						<where>
+							<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+							<if test="activitycode != null and activitycode != ''">
+								AND a.activitycode = #{activitycode}
+							</if>
+							<if test="tag != null">
+								AND a.tag  = #{tag}
+							</if>							
+						</where>
+						ORDER BY decode(a.like_count,NULL,0,a.like_count) DESC,TO_NUMBER(a.no) ASC) row_
+				<where>
+					<![CDATA[ rownum <= #{end} ]]>
+				</where>
+                ) table_alias
+         WHERE table_alias."order" > #{start}
+	</select>
+	
+	<select id="findList" resultType="VoteWorks">
+		SELECT 
+			<include refid="voteWorksColumns"/>
+		FROM act_vote_works a
+		<include refid="voteWorksJoins"/>
+		<where>
+			<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+			<if test="no != null and no != ''">
+				AND a.no = #{no}
+			</if>
+			<if test="tag != null">
+				AND a.tag = #{tag}
+			</if>			
+			<if test="name != null and name != ''">
+				AND (a.name LIKE '%'||#{name}||'%' or a.no = #{name})
+			</if>
+			<if test="activitycode != null and activitycode != ''">
+				AND a.activitycode = #{activitycode}
+			</if>
+		</where>
+		ORDER BY TO_NUMBER(a.no) ASC
+	</select>
+	
+	<select id="findAllList" resultType="VoteWorks">
+		SELECT 
+			<include refid="voteWorksColumns"/>
+		FROM act_vote_works a
+		<include refid="voteWorksJoins"/>
+		<where>
+			<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+			<if test="activitycode != null and activitycode != ''">
+				AND a.activitycode = #{activitycode}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<update id="likeAdd">
+		UPDATE act_vote_works SET 
+			like_count = nvl(like_count,0) + 1,
+			update_time = #{updateTime}
+		WHERE no = #{no} AND tag = #{tag}
+		AND <![CDATA[ create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+	</update>
+	
+</mapper>

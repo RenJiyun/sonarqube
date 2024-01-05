@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.actWL20.dao.GiftBoxDao">
+        
+        <sql id="fundinGoColumns">
+                a.ID AS "id",
+                a.MOBILE AS "mobile",
+                a.MOBILE_TYPE AS "userType",
+                a.ACTIVITY_CODE AS "activityCode"
+        </sql>
+   		
+   		<select id="findList" resultType="ActGiftBox">
+                SELECT 
+                	<include refid="fundinGoColumns"/>
+                FROM ACT_USER_TYPE_20210923 a
+                <where>
+                		<if test="mobile != null and mobile != ''">
+                       		AND a.mobile = #{mobile}
+                		</if>
+                		<if test="activityCode != null and activityCode != ''">
+                       		AND a.activity_code = #{activityCode}
+                		</if>
+                </where>
+        </select>
+        
+        
+</mapper>

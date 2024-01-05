@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.base.dao.CheckListDao">
+    
+	<sql id="checkListColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.mobile AS "mobile",
+		a.sourceu AS "sourceu",
+		a.status AS "status",
+		a.remark AS "remark",
+		a.create_time AS "createTime"
+	</sql>
+	
+	<sql id="checkListJoins">
+	</sql>
+    
+	<select id="get" resultType="CheckList">
+		SELECT 
+			<include refid="checkListColumns"/>
+		FROM act_check_list a
+		<include refid="checkListJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CheckList">
+		SELECT 
+			<include refid="checkListColumns"/>
+		FROM act_check_list a
+		<include refid="checkListJoins"/>
+		<where>
+			
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+			<if test="sourceu != null and sourceu != ''">
+				AND a.sourceu = #{sourceu}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="CheckList">
+		SELECT 
+			<include refid="checkListColumns"/>
+		FROM act_check_list a
+		<include refid="checkListJoins"/>
+		<where>
+			
+		</where>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_check_list(
+			id,
+			user_id,
+			mobile,
+			sourceu,
+			status,
+			remark,
+			create_time
+		) VALUES (
+			#{id},
+			#{userId},
+			#{mobile},
+			#{sourceu},
+			#{status},
+			#{remark},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_check_list SET 	
+			user_id = #{userId},
+			mobile = #{mobile},
+			sourceu = #{sourceu},
+			status = #{status},
+			remark = #{remark},
+			create_time = #{createTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_check_list
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

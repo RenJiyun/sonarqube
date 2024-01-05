@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.actWL20.dao.ActCoupon818Dao">
+    
+        
+        <insert id="addFundinGo">
+                INSERT INTO act_fundin_go(
+                	customer_id,
+                	open_date,
+                	create_time
+                ) VALUES (
+					#{customerId},
+                    #{openDate},
+                    SYSDATE
+                )
+        </insert>
+        
+        <select id="findFundinGo" resultType="com.wlzq.activity.actWL20.model.ActFundinGo">
+			select a.customer_id as "customerId",
+				   a.open_date as "openDate",
+			       a.create_time as "createTime"
+			from act_fundin_go a
+			where a.customer_id = #{customerId}
+				  
+        </select>
+   		
+   		<insert id="addSubscribe">
+                INSERT INTO ACT_SUBSCRIBE(
+                	activity_code,
+                    mobile,
+                	customer_id,
+                	create_time
+                ) VALUES (
+                	#{activityCode},
+                	#{mobile},
+					#{customerId},
+                    SYSDATE
+                )
+        </insert>
+        
+        <select id="findSubscribe" resultType="com.wlzq.activity.actWL20.model.ActSubscribe">
+			select a.activity_code as "activityCode",
+			       a.customer_id as "customerId",
+			       a.mobile
+			from ACT_SUBSCRIBE a
+			where a.activity_code = #{activityCode}
+				and a.mobile = #{mobile}
+				  
+        </select>
+
+</mapper>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.base.dao.ActPrizeTypeDao">
+
+	<sql id="actPrizeTypeColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.code AS "code",
+		a.worth AS "worth",
+		a.is_level2 AS "isLevel2",
+		a.type AS "type",
+		a.time AS "time",
+		a.remark AS "remark",
+		a.create_time AS "createTime",
+		a.is_deleted AS "isDeleted",
+		a.LIMIT_TIMES_TYPE AS "limitTimesType",
+		a.MAX_TIMES_DAILY AS "maxTimesDaily",
+		a.POINT AS "point",
+		a.DAILY_LIMIT AS "dailyLimit",
+		a.LIMIT_PER_USER AS "limitPerUser"
+	</sql>
+
+	<sql id="actPrizeTypeJoins">
+	</sql>
+
+	<select id="get" resultType="ActPrizeType">
+		SELECT
+			<include refid="actPrizeTypeColumns"/>
+		FROM act_prize_type a
+		<include refid="actPrizeTypeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findByCode" resultType="com.wlzq.activity.base.model.ActPrizeType">
+		SELECT
+			<include refid="actPrizeTypeColumns"/>
+		FROM act_prize_type a
+		<include refid="actPrizeTypeJoins"/>
+		WHERE a.code = #{code}
+	</select>
+
+	<select id="findList" resultType="ActPrizeType">
+		SELECT
+			<include refid="actPrizeTypeColumns"/>
+		FROM act_prize_type a
+		<include refid="actPrizeTypeJoins"/>
+		<where>
+
+			<if test="name != null and name != ''">
+				AND a.name LIKE
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="code != null and code != ''">
+				AND a.code = #{code}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="ActPrizeType">
+		SELECT
+			<include refid="actPrizeTypeColumns"/>
+		FROM act_prize_type a
+		<include refid="actPrizeTypeJoins"/>
+		<where>
+
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_prize_type(
+			name,
+			code,
+			worth,
+			is_level2,
+			type,
+			time,
+			remark,
+			create_time,
+			is_deleted,
+			LIMIT_TIMES_TYPE,
+			MAX_TIMES_DAILY,
+			POINT,
+			DAILY_LIMIT
+		) VALUES (
+			#{name},
+			#{code},
+			#{worth, jdbcType=DOUBLE},
+			#{isLevel2, jdbcType=INTEGER},
+			#{type},
+			#{time, jdbcType=INTEGER},
+			#{remark, jdbcType=VARCHAR},
+			#{createTime, jdbcType=TIMESTAMP},
+			#{isDeleted, jdbcType=INTEGER},
+			#{limitTimesType, jdbcType=INTEGER},
+			#{maxTimesDaily, jdbcType=INTEGER},
+			#{point, jdbcType=INTEGER},
+			#{dailyLimit, jdbcType=INTEGER}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE act_prize_type SET
+			name = #{name},
+			code = #{code},
+			worth = #{worth},
+			is_level2 = #{isLevel2},
+			type = #{type},
+			time = #{time},
+			remark = #{remark},
+			create_time = #{createTime},
+			is_deleted = #{isDeleted},
+			LIMIT_TIMES_TYPE = #{limitTimesType},
+			MAX_TIMES_DAILY = #{maxTimesDaily, jdbcType=INTEGER},
+			POINT = #{point, jdbcType=INTEGER},
+			DAILY_LIMIT = #{dailyLimit, jdbcType=INTEGER}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		DELETE FROM act_prize_type
+		WHERE id = #{id}
+	</update>
+
+</mapper>

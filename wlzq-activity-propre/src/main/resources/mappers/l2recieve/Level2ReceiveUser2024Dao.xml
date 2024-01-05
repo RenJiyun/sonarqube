@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.l2recieve.dao.Level2ReceiveUser2024Dao">
+   
+   <resultMap id="level2ReceiveUser2024ResultMap" type="com.wlzq.activity.l2recieve.model.Level2ReceiveUser2024">
+	  <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+	  <result property="effectiveDate" column="effectiveDate" jdbcType="TIMESTAMP"/>
+   </resultMap>
+   
+	<sql id="level2ReceiveUser2024Columns">
+		a.id AS "id",
+		a.custmer_id AS "custmerId",
+		a.mobile AS "mobile",
+		a.type AS "type",
+		a.effective_date AS "effectiveDate",
+		a.create_time AS "createTime"
+	</sql>
+
+
+	<select id="findList" resultMap="level2ReceiveUser2024ResultMap">
+        SELECT
+        <include refid="level2ReceiveUser2024Columns"/>
+        FROM ACT_LEVEL2_RECEIVE_USER_2024 a
+        <where>
+
+            <if test="customerId != null and customerId != ''">
+                AND a.custmer_id = #{customerId}
+            </if>
+            <if test="type != null and type != ''">
+                AND a.type = #{type}
+            </if>
+        </where>
+    </select>
+
+</mapper>

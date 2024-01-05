@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wlzq.activity.base.dao.ActAppointmentDao" >
+  <!-- 查询的列  start  -->
+  <sql id="appointment_columns" >
+  		a.id AS id,
+ 		a.activity_code AS activityCode,
+  		a.appointment_code as appointmentCode,
+  		a.appointment_name as appointmentName,
+  		a.userId as userId,
+  		a.customer_id as customerId,
+  		a.phone as phone,
+		a.create_date AS createDate,
+		a.open_id AS openId,
+		a.reach_type AS reachType,
+		a.appointment_time AS appointmentTime,
+		a.status AS status
+  </sql>
+  <!-- 查询的列  end  -->
+  
+  <!-- 分页  start  -->
+  <sql id = "page">
+  	<if test="start != null and end != null and start >= 0 and end >= 0 ">
+  		limit #{start},#{end}
+  	</if>
+  </sql>
+  <!-- 分页  end  -->
+  
+  <!-- 查询条件 start -->
+  <sql id="comm_where">
+  		<if test="id != null and id != '' ">
+	  		and a.ID = #{id}
+	  	</if>
+  		<if test="appointmentCode != null and appointmentCode != '' ">
+	  		and a.appointment_code = #{appointmentCode}
+	  	</if>
+  		<if test="activityCode != null and activityCode != '' ">
+	  		and a.activity_code = #{activityCode}
+	  	</if>
+  		<if test="appointmentCodeList != null and appointmentCodeList.size() > 0">
+	  		and a.appointment_code in
+	  		<foreach collection="appointmentCodeList" item="code" open="(" close=")" separator=",">
+	  			#{code}
+	  		</foreach>
+	  	</if>
+  		<if test="userId != null and userId != '' ">
+	  		and a.userId = #{userId}
+	  	</if>
+  		<if test="customerId != null and customerId != '' ">
+	  		and a.customer_id = #{customerId}
+	  	</if>
+  		<if test="phone != null and phone != '' ">
+	  		and a.phone = #{phone}
+	  	</if>
+  		<if test="createDate != null and createDate != '' ">
+	  		and a.create_date = #{createDate}
+	  	</if>
+  		<if test="appointmentTime != null and appointmentTime != '' ">
+	  		and a.appointment_time = #{appointmentTime}
+	  	</if>
+  </sql>
+  <!-- 查询条件 end  -->
+  
+  <!-- 实体通用方法  start  -->
+   	<select id="findList" resultType="ActAppointment">
+		SELECT 
+			<include refid="appointment_columns"/>
+		FROM act_activity_appointment a
+		<where>
+			<include refid="comm_where"/>
+		</where>
+	</select>
+
+	<select id="getAllUserMobileNeedSendReminder" resultType="java.lang.String">
+		SELECT distinct PHONE FROM ACT_ACTIVITY_APPOINTMENT
+		WHERE ACTIVITY_CODE = #{activityCode} AND PHONE IS NOT NULL
+	</select>
+	<!-- 实体通用方法  end  -->
+  
+  <!-- 修改 start -->
+  <!-- 修改 end -->
+  
+  <!-- 新增 start -->
+  <insert id="insert" parameterType="ActAppointment">
+  	INSERT INTO act_activity_appointment(
+  				activity_code,
+		  		appointment_code,
+		  		appointment_name,
+		  		userId,
+		  		customer_id,
+		  		phone,
+		  		create_date,
+		  		open_id,
+		  		reach_type,
+		  		appointment_time
+		) VALUES (
+				#{activityCode, jdbcType=VARCHAR},
+		  		#{appointmentCode, jdbcType=VARCHAR},
+		  		#{appointmentName, jdbcType=VARCHAR},
+		  		#{userId, jdbcType=VARCHAR},
+		  		#{customerId, jdbcType=VARCHAR},
+		  		#{phone, jdbcType=VARCHAR},
+		  		#{createDate, jdbcType=TIMESTAMP},
+		  		#{openId, jdbcType=VARCHAR},
+		  		#{reachType, jdbcType=VARCHAR},
+		  		#{appointmentTime, jdbcType=TIMESTAMP}
+		)
+	</insert>
+   <!-- 新增 end -->
+   
+	  <update id="update" parameterType="ActAppointment" >
+		  	update act_activity_appointment a 
+		  	<set>  
+			  		<if test="activityCode != null and activityCode != ''">
+				  		a.activity_code = #{activityCode},
+				  	</if>
+			  		<if test="appointmentCode != null and appointmentCode != ''">
+				  		a.appointment_code = #{appointmentCode},
+				  	</if>
+				  	<if test="appointmentName != null and appointmentName != ''">
+				  		a.appointment_name = #{appointmentName},
+				  	</if>
+				  	<if test="userId != null and userId != ''">
+				  		a.userId = #{userId},
+				  	</if>
+				  	<if test="openId != null and openId != ''">
+				  		a.open_id = #{openId},
+				  	</if>
+				  	<if test="reachType != null and reachType != ''">
+				  		a.reach_type = #{reachType},
+				  	</if>
+				  	<if test="customerId != null and customerId != ''">
+				  		a.customer_id = #{customerId},
+				  	</if>
+				  	<if test="phone != null and phone != ''">
+				  		a.phone = #{phone},
+				  	</if>
+				  	<if test="appointmentTime != null">
+				  		a.appointment_time = #{appointmentTime},
+				  	</if>
+				  	a.update_time = #{updateTime}
+		    </set>
+		    where a.id = #{id}
+	  </update>
+</mapper>

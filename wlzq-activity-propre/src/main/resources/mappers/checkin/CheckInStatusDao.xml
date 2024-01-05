@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.checkin.dao.CheckInStatusDao">
+    
+	<sql id="CheckInStatusColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.openid AS "openid",
+		a.total_count AS "totalCount",
+		a.continuous_count AS "continuousCount",
+		a.continuous_count_date AS "continuousCountDate",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.prize_type AS "prizeType",
+		a.prize AS "prize",
+		a.remark AS "remark"
+	</sql>
+	
+	<sql id="CheckInStatusJoins">
+	</sql>
+    
+	<select id="get" resultType="CheckInStatus">
+		SELECT 
+			<include refid="CheckInStatusColumns"/>
+		FROM act_check_in_status a
+		<include refid="CheckInStatusJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="checkInCount" resultType="java.lang.Long">
+		SELECT count(*)
+		FROM act_check_in_status a
+	</select>
+	
+	<select id="findByUserId" resultType="CheckInStatus">
+		SELECT 
+			<include refid="CheckInStatusColumns"/>
+		FROM act_check_in_status a
+		<include refid="CheckInStatusJoins"/>
+		<where>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findByOpenId" resultType="CheckInStatus">
+		SELECT 
+			<include refid="CheckInStatusColumns"/>
+		FROM act_check_in_status a
+		<include refid="CheckInStatusJoins"/>
+		<where>
+			<if test="openid != null and openid != ''">
+				AND a.openid = #{openid}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findList" resultType="CheckInStatus">
+		SELECT 
+			<include refid="CheckInStatusColumns"/>
+		FROM act_check_in_status a
+		<include refid="CheckInStatusJoins"/>
+		<where>
+			
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="openid != null and openid != ''">
+				AND a.openid = #{openid}
+			</if>
+			<if test="totalCount != null and totalCount != ''">
+				AND a.total_count = #{totalCount}
+			</if>
+			<if test="continuousCount != null and continuousCount != ''">
+				AND a.continuous_count = #{continuousCount}
+			</if>
+			<if test="createTime != null and createTime != ''">
+				AND a.create_time = #{createTime}
+			</if>
+			<if test="updateTime != null and updateTime != ''">
+				AND a.update_time = #{updateTime}
+			</if>
+			<if test="remark != null and remark != ''">
+				AND a.remark = #{remark}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="CheckInStatus">
+		SELECT 
+			<include refid="CheckInStatusColumns"/>
+		FROM act_check_in_status a
+		<include refid="CheckInStatusJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_check_in_status(
+			user_id,
+			openid,
+			total_count,
+			continuous_count,
+			continuous_count_date,
+			create_time
+		) VALUES (
+			#{userId},
+			#{openid},
+			#{totalCount},
+			#{continuousCount},
+			#{continuousCountDate},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_check_in_status SET 	
+			total_count = #{totalCount},
+			continuous_count = #{continuousCount},
+			continuous_count_date = #{continuousCountDate},
+			update_time = #{updateTime, jdbcType=TIMESTAMP},
+			prize = #{prize, jdbcType=VARCHAR},
+			prize_type = #{prizeType, jdbcType=INTEGER}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_check_in_status
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.turntable.dao.TurntableePrizeDao">
+    <resultMap id="userPrize" type="com.wlzq.activity.base.dto.UserPrizeDto">
+	  <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+   </resultMap>
+  
+	<sql id="turntablePrizeColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.redeem_code AS "redeemCode",
+		a.worth AS "worth",
+		a.type AS "type",
+		a.turntable_id AS "turntableId",
+		a.prize_id AS "prizeId",
+		a.prize_code AS "prizeCode",
+		a.create_time AS "createTime"
+	</sql>
+	
+	<sql id="turntablePrizeJoins">
+	</sql>
+    
+	<select id="get" resultType="TurntableePrize">
+		SELECT 
+			<include refid="turntablePrizeColumns"/>
+		FROM act_turntable_prize a
+		<include refid="turntablePrizeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findPrizes" resultType="TurntableePrizeDto">
+		select *
+		  from (select row_.*, rownum rownum_
+		          from (
+						select NVL(u.nick_name,REPLACE(u.mobile, substr(u.mobile,4,4), '****')) as "mobile",
+			                   p.name      as "prizeName",
+			                   a.type as "type",
+			                   a.worth as "worth"
+			              from act_turntable_prize a
+			              left join act_prize_type p
+			                on a.prize_code = p.code
+			              left join acc_user u
+			                on a.user_id = u.user_id
+			              left join act_prize ap
+	        				on a.prize_id = ap.id
+			             <where>
+							<if test="activity != null and activity != ''">
+								AND p.activity_code = #{activity}
+							</if>
+						</where>
+			             order by a.id desc
+				    	) row_
+			         WHERE <![CDATA[ rownum <= #{end} ]]>
+			         	
+	        ) 
+		 WHERE rownum_ > #{start}
+	</select>
+	
+	<select id="findUserPrizes" resultMap="userPrize">
+		select *
+		  from (select row_.*, rownum rownum_
+		          from (
+						select a.type as "type",
+			                 t.time as "time",
+			                 a.worth as "worth",
+			                 p.redeem_code as "redeemCode",
+			                 p.card_no as "cardNo",
+			                 p.card_password as "cardPassword",
+			                 p.status as "status",
+			                 a.create_time as "createTime"
+			            from act_turntable_prize a
+			            left join act_prize_type t
+			              on a.prize_code = t.code
+			            left join act_prize p
+			              on a.prize_id = p.id
+					    where a.user_id = #{userId}
+							<if test="activity != null and activity != ''">
+								AND p.activity_code = #{activity}
+							</if>
+					 order by a.id desc
+				) row_
+			         WHERE <![CDATA[ rownum <= #{end} ]]>
+	        ) 
+		 WHERE rownum_ > #{start}
+	</select>
+	
+	<select id="findNotUseCount" resultType="java.lang.Integer">
+		select count(a.id)
+	      from act_turntable_prize a
+	      left join act_prize p
+	        on a.prize_id = p.id
+	     where  a.user_id = #{userId}
+	       and a.type = 1
+	       and p.status = 2
+			<if test="activity != null and activity != ''">
+				AND p.activity_code = #{activity}
+			</if>	       	
+	</select>
+	
+	<select id="findList" resultType="TurntableePrize">
+		SELECT 
+			<include refid="turntablePrizeColumns"/>
+		FROM act_turntable_prize a
+		<include refid="turntablePrizeJoins"/>
+		<where>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TurntableePrize">
+		SELECT 
+			<include refid="turntablePrizeColumns"/>
+		FROM act_turntable_prize a
+		<include refid="turntablePrizeJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO act_turntable_prize(
+			user_id,
+			redeem_code,
+			worth,
+			type,
+			turntable_id,
+			prize_id,
+			prize_code,
+			create_time
+		) VALUES (
+			#{userId},
+			#{redeemCode, jdbcType=VARCHAR},
+			#{worth, jdbcType=DOUBLE},
+			#{type},
+			#{turntableId},
+			#{prizeId, jdbcType=INTEGER},
+			#{prizeCode, jdbcType=VARCHAR},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_turntable_prize SET 	
+			user_id = #{userId},
+			redeem_code = #{redeemCode},
+			worth = #{worth},
+			type = #{type},
+			turntable_id = #{turntableId},
+			prize_id = #{prizeId},
+			prize_code = #{prizeCode},
+			create_time = #{createTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_turntable_prize
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

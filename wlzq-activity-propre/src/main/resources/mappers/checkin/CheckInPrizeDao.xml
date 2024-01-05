@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.checkin.dao.CheckInPrizeDao">
+    
+	<sql id="checkInPrizeColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.openid AS "openid",
+		a.prize AS "prize",
+		a.prize_type AS "prizeType",
+		a.start_time AS "startTime",
+		a.end_time AS "endTime",
+		a.create_time AS "createTime",
+		a.remark AS "remark"
+	</sql>
+	
+	<sql id="checkInPrizeJoins">
+	</sql>
+    
+	<select id="get" resultType="CheckInPrize">
+		SELECT 
+			<include refid="checkInPrizeColumns"/>
+		FROM act_check_in_prize a
+		<include refid="checkInPrizeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findPrize" resultType="CheckInPrize">
+		SELECT 
+			<include refid="checkInPrizeColumns"/>
+		FROM act_check_in_prize a
+		<include refid="checkInPrizeJoins"/>
+		<where>
+			<if test="openid != null and openid != ''">
+				AND a.openid = #{openid}
+			</if>
+			<if test="timeStart != null">
+				AND a.create_time >= #{timeStart}
+			</if>
+			<if test="timeEnd != null">
+				<![CDATA[AND a.create_time <= #{timeEnd}]]>
+			</if>
+		</where>
+	</select>
+	
+	<select id="findList" resultType="CheckInPrize">
+		SELECT 
+			<include refid="checkInPrizeColumns"/>
+		FROM act_check_in_prize a
+		<include refid="checkInPrizeJoins"/>
+		<where>
+			
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="openid != null and openid != ''">
+				AND a.openid = #{openid}
+			</if>
+		</where>
+		order by a.create_time desc
+	</select>
+	
+	<select id="findAllList" resultType="CheckInPrize">
+		SELECT 
+			<include refid="checkInPrizeColumns"/>
+		FROM act_check_in_prize a
+		<include refid="checkInPrizeJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO act_check_in_prize(
+			user_id,
+			openid,
+			prize,
+			prize_type,
+			start_time,
+			end_time,
+			create_time,
+			remark
+		) VALUES (
+			#{userId},
+			#{openid},
+			#{prize},
+			#{prizeType},
+			#{startTime},
+			#{endTime},
+			#{createTime},
+			#{remark}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_check_in_prize SET 	
+			user_id = #{userId},
+			openid = #{openid},
+			prize = #{prize},
+			prize_type = #{prizeType},
+			start_time = #{startTime},
+			end_time = #{endTime},
+			create_time = #{createTime},
+			remark = #{remark}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_check_in_prize
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

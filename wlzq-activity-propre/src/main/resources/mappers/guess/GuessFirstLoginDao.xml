@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.guess.dao.GuesssFirstLoginDao">
+    
+	<sql id="guessFirstLoginColumns">
+		a.id AS "id",
+		a.activity_code AS "activityCode",
+		a.user_id AS "userId",
+		a.create_time AS "createTime"
+	</sql>
+	
+	<sql id="guessFirstLoginJoins">
+	</sql>
+    
+	<select id="get" resultType="GuesssFirstLogin">
+		SELECT 
+			<include refid="guessFirstLoginColumns"/>
+		FROM act_guess_first_login a
+		<include refid="guessFirstLoginJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findLogin" resultType="GuesssFirstLogin">
+		SELECT 
+			<include refid="guessFirstLoginColumns"/>
+		FROM act_guess_first_login a
+		<include refid="guessFirstLoginJoins"/>
+		WHERE a.user_id = #{userId} AND a.activity_code = #{activityCode}
+		and a.create_time >= #{createTimeFrom}
+		and <![CDATA[  a.create_time <= #{createTimeTo}]]>
+	</select>
+	
+	
+	<select id="findList" resultType="GuesssFirstLogin">
+		SELECT 
+			<include refid="guessFirstLoginColumns"/>
+		FROM act_guess_first_login a
+		<include refid="guessFirstLoginJoins"/>
+		<where>
+			
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GuesssFirstLogin">
+		SELECT 
+			<include refid="guessFirstLoginColumns"/>
+		FROM act_guess_first_login a
+		<include refid="guessFirstLoginJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" >
+		INSERT INTO act_guess_first_login(
+			activity_code,
+			user_id,
+			create_time
+		) VALUES (
+			#{activityCode},
+			#{userId},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_guess_first_login SET 	
+			user_id = #{userId},
+			activity_code = #{activityCode},
+			create_time = #{createTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_guess_first_login
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

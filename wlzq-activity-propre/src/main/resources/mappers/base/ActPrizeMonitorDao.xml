@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.base.dao.ActPrizeMonitorDao">
+
+    <select id="selectAll" resultType="com.wlzq.activity.base.model.ActPrizeMonitor">
+        SELECT
+        b.c as remainingQuantity,
+        a.remaining_quantity_warning as remainingQuantityWarning,
+        a.sms_alert_phone_number as smsAlertPhoneNumber,
+        a.prize_type_code as code,
+        c.name as prizeName,
+        d.sum as sumQuantity
+        FROM ACT_PRIZE_MONITORING a
+        LEFT JOIN (SELECT b.code,COUNT(b.code) as c FROM ACT_PRIZE b WHERE status = 1 GROUP BY b.code)b ON a.prize_type_code = b.code
+        LEFT JOIN ACT_PRIZE_TYPE c ON b.code = c.code
+        LEFT JOIN (SELECT d.code,COUNT(d.code) as sum FROM ACT_PRIZE d  GROUP BY d.code)d ON a.prize_type_code = d.code
+        WHERE a.status = 1
+    </select>
+
+    <select id="selectNameByCode" resultType="java.lang.String">
+        SELECT a.name
+        FROM ACT_ACTIVITY a LEFT JOIN ACT_PRIZE b ON a.code = b.activity_code
+        WHERE b.code = #{code}
+        GROUP BY a.name
+    </select>
+
+    <update id="setStatus">
+        update ACT_PRIZE_MONITORING SET status = 2,TRIGGERING_TIME = SYSDATE WHERE PRIZE_TYPE_CODE = #{code}
+    </update>
+</mapper>

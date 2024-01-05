@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.actWL20.dao.FundinGoDao">
+        
+        <sql id="fundinGoColumns">
+                a.ID AS "id",
+                a.CUSTOMER_ID AS "customerId",
+                a.OPEN_DATE AS "openDate",
+                a.FIRST_FUNDING_DATE AS "firstFundingDate",
+                a.AMOUNT AS "amount",
+                a.LAST_FUNDING_DATE AS "lastFundingDate",
+                a.STATUS AS "status",
+                a.CREATE_TIME AS "createTime",
+                a.UPDATE_TIME AS "updateTime"
+        </sql>
+   		
+   		<select id="findNotAvailableFundinGo" resultType="ActFundinGo">
+                SELECT 
+                	<include refid="fundinGoColumns"/>
+                FROM ACT_FUNDIN_GO a
+                WHERE NVL(a.STATUS,1)=1
+        </select>
+        
+        <update id="update" parameterType="ActFundinGo">
+                UPDATE ACT_FUNDIN_GO SET 
+                        FIRST_FUNDING_DATE = #{firstFundingDate},
+                        AMOUNT =  #{amount},
+                        LAST_FUNDING_DATE =  #{lastFundingDate},
+                        STATUS =  #{status,jdbcType=INTEGER},
+                        UPDATE_TIME =  #{updateTime}
+                WHERE id = #{id}
+        </update>
+        
+</mapper>

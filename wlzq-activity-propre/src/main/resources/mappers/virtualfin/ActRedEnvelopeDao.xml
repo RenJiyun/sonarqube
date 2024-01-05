@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.virtualfin.dao.ActRedEnvelopeDao">
+    <resultMap type="com.wlzq.activity.virtualfin.model.ActRedEnvelope" id="actRedEnvelopeMap">
+    	<result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+    	<result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    
+	<sql id="actRedEnvelopeColumns">
+		a.id AS "id",
+		a.mobile AS "mobile",
+		a.user_id AS "userId",
+		a.open_id AS "openId",
+		a.customer_id AS "customerId",
+		a.flag AS "flag",
+		a.activity_code AS "activityCode",
+		a.business_code AS "businessCode",
+		a.business_name AS "businessName",
+		a.quantity AS "quantity",
+		a.red_envelope_url AS "redEnvelopeUrl",
+		a.status AS "status",
+		a.order_id AS "orderId",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.is_deleted AS "isDeleted"
+	</sql>
+	
+	<sql id="actRedEnvelopeJoins">
+	</sql>
+    
+	<select id="get" resultType="ActRedEnvelope">
+		SELECT 
+			<include refid="actRedEnvelopeColumns"/>
+		FROM act_red_envelope a
+		<include refid="actRedEnvelopeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByOrderId" resultType="ActRedEnvelope">
+		SELECT 
+			<include refid="actRedEnvelopeColumns"/>
+		FROM act_red_envelope a
+		<include refid="actRedEnvelopeJoins"/>
+		WHERE a.order_id = #{orderId}
+	</select>
+	
+	<select id="findList" resultMap="actRedEnvelopeMap">
+		<if test="page != null">
+			SELECT *
+				FROM (SELECT row_.*,rownum rownum_
+					FROM (
+		</if>
+					SELECT 
+						<include refid="actRedEnvelopeColumns"/>
+					FROM act_red_envelope a
+					<include refid="actRedEnvelopeJoins"/>
+					<where>
+						<if test="activityCode != null and activityCode != ''">
+							AND a.activity_code = #{activityCode}
+						</if>			
+						<if test="mobile != null and mobile != ''">
+							AND a.mobile = #{mobile}
+						</if>
+					</where>
+					ORDER BY a.id DESC
+		<if test="page != null">
+						) row_
+					WHERE <![CDATA[ rownum <= #{page.end} ]]>
+				) table_alias
+			WHERE table_alias.rownum_ > #{page.start}
+		</if>
+	</select>
+	
+	<select id="findAllList" resultType="ActRedEnvelope">
+		SELECT 
+			<include refid="actRedEnvelopeColumns"/>
+		FROM act_red_envelope a
+		<include refid="actRedEnvelopeJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="getBalance" resultType="Double">
+		SELECT 
+			nvl(sum(a.quantity), 0)
+		FROM act_red_envelope a
+		<include refid="actRedEnvelopeJoins"/>
+		<where>
+			<if test="activityCode != null and activityCode != ''">
+				AND a.activity_code = #{activityCode}
+			</if>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+		</where>
+	</select>
+
+    <select id="getLastAmountFlow" resultType="com.wlzq.activity.virtualfin.dto.LastAmountFlowResDto">
+		select * from (
+		    SELECT a."MOBILE" as mobile,-a.quantity as withdrawAmount FROM act_red_envelope a
+			where a.activity_code = #{activityCode} and a.flag=2
+			order by a.id desc )
+		where rownum &lt;=10
+	</select>
+
+    <insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_red_envelope(
+			mobile,
+			user_id,
+			open_id,
+			customer_id,
+			flag,
+			activity_code,
+			business_code,
+			business_name,
+			order_id,
+			quantity,
+			red_envelope_url,
+			status,
+			create_time
+		) VALUES (
+			#{mobile, jdbcType=VARCHAR},
+			#{userId, jdbcType=VARCHAR},
+			#{openId, jdbcType=VARCHAR},
+			#{customerId, jdbcType=VARCHAR},
+			#{flag, jdbcType=INTEGER},
+			#{activityCode, jdbcType=VARCHAR},
+			#{businessCode, jdbcType=VARCHAR},
+			#{businessName, jdbcType=VARCHAR},
+			#{orderId, jdbcType=VARCHAR},
+			#{quantity, jdbcType=DOUBLE},
+			#{redEnvelopeUrl, jdbcType=VARCHAR},
+			#{status, jdbcType=INTEGER},
+			#{createTime, jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_red_envelope SET 	
+			mobile = #{mobile, jdbcType=VARCHAR},
+			user_id = #{userId, jdbcType=VARCHAR},
+			open_id = #{openId, jdbcType=VARCHAR},
+			customer_id = #{customerId, jdbcType=VARCHAR},
+			flag = #{flag, jdbcType=INTEGER},
+			activity_code = #{activityCode, jdbcType=VARCHAR},
+			business_code = #{businessCode, jdbcType=VARCHAR},
+			business_name = #{businessName, jdbcType=VARCHAR},
+			order_id = #{orderId, jdbcType=VARCHAR},
+			quantity = #{quantity, jdbcType=DOUBLE},
+			red_envelope_url = #{redEnvelopeUrl, jdbcType=VARCHAR},
+			status = #{status, jdbcType=INTEGER},
+			update_time = #{updateTime, jdbcType=TIMESTAMP},
+			is_deleted = #{isDeleted, jdbcType=INTEGER}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_red_envelope
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

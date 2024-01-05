@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.stockcourse.dao.StockCourseUserDao">
+    
+	<sql id="StockCourseUserColumns">
+		a.id AS "id",
+		a.mobile AS "mobile",
+		a.open_id AS "openId",
+		a.wechat_name AS "wechatName",
+		a.customer_id AS "customerId",
+		a.registration_time AS "registrationTime",
+		a.account_open_time AS "accountOpenTime",
+		<!-- a.learned_course_number AS "learnedCourseNumber", -->
+		a.watched_live_stream AS "watchedLiveStream",
+		a.name AS "name",
+		a.receiving_address AS "receivingAddress",
+		a.receiving_mobile AS "receivingMobile",
+	<!-- 	a.course_status AS "courseStatus", -->
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime"
+	</sql>
+	
+	<sql id="StockCourseUserJoins">
+	</sql>
+    
+	<select id="get" resultType="StockCourseUser">
+		SELECT 
+			<include refid="StockCourseUserColumns"/>
+		FROM act_stock_course_user a
+		<include refid="StockCourseUserJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByMobile" resultType="StockCourseUser">
+		SELECT 
+			<include refid="StockCourseUserColumns"/>
+		FROM act_stock_course_user a
+		<include refid="StockCourseUserJoins"/>
+		WHERE a.mobile = #{mobile}
+	</select>
+	
+	<select id="getByMobileAndTemplateCode" resultType="StockCourseUser">
+		SELECT 
+			<include refid="StockCourseUserColumns"/>
+		 ,case when b.status = 2 or b.status = 3 then 1 else 0
+		 end as "receivedCoupon"
+		,case when b.status = 3 then 1 else 0
+		end as "purchasedWanShanHong"
+		FROM act_stock_course_user a
+		left join base_coupon b on a.customer_id = b.customer_id and b.template = #{templateCode}
+		<include refid="StockCourseUserJoins"/>
+		WHERE a.mobile = #{mobile}
+	</select>
+	
+		
+	<select id="findList" resultType="StockCourseUser">
+		SELECT 
+			<include refid="StockCourseUserColumns"/>
+		,case when b.status = 2 or b.status = 3 then 1 else 0
+		 end as "receivedCoupon"
+		,case when b.status = 3 then 1 else 0
+		end as "purchasedWanShanHong"
+		FROM act_stock_course_user a
+		left join base_coupon b on a.customer_id = b.customer_id and b.template = #{couponTemplate}
+		<include refid="StockCourseUserJoins"/>
+		<where>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="customerId != null and customerId != ''">
+				AND a.customer_id =  #{customerId}
+			</if>
+			<if test="learnedCourseNumber != null and learnedCourseNumber != ''">
+				AND a.learned_course_number =  #{learnedCourseNumber}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="StockCourseUser">
+		SELECT 
+			<include refid="StockCourseUserColumns"/>
+		FROM act_stock_course_user a
+		<include refid="StockCourseUserJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_stock_course_user(
+			mobile,
+			open_id,
+			wechat_name,
+			customer_id,
+			account_open_time,
+			registration_time,
+			<!-- learned_course_number, -->
+			watched_live_stream,
+		<!-- 	course_status, -->
+			create_time
+		) VALUES (
+			#{mobile},
+			#{openId},
+			#{wechatName},
+			#{customerId},
+			#{accountOpenTime},
+			#{registrationTime},
+		<!-- 	#{learnedCourseNumber}, -->
+			#{watchedLiveStream},
+		<!-- 	#{courseStatus}, -->
+			#{createTime}
+		)
+	</insert>
+	
+	<select id="findCouseStatusList" resultType="StockCourseStatus">
+		SELECT 
+			a.id AS "id",
+			a.mobile AS "mobile",
+			a.class_open_date AS "classOpenDate",
+			a.status AS "status",
+		    a.create_time AS "createTime"
+		FROM act_stock_course_status a
+		<include refid="StockCourseUserJoins"/>
+		WHERE a.mobile = #{mobile} 
+		<if test="classOpenDate != null">
+			and a.class_open_date <![CDATA[ <= ]]>  #{classOpenDate}
+		</if>
+		order by a.class_open_date asc
+	</select>
+	
+	<select id="getUserToPush" resultType="StockCourseUser">
+	 select * from (
+			SELECT 
+				<include refid="StockCourseUserColumns"/>
+				,b.class_no AS "courseNumber"
+			FROM act_stock_course_user a
+			left join ACT_STOCK_COURSE_STATUS b on a.mobile = b.mobile 
+			<include refid="StockCourseUserJoins"/>
+			WHERE  b.status = 0 and b.class_open_date = #{classOpenDate} and
+			       (b.push_time is null or b.push_time <![CDATA[ < ]]> #{pushTime})
+			order by a.id desc
+      )  where rownum <![CDATA[ < ]]> 101
+	</select>
+	
+	<insert id="insertStockCourseStatus"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_stock_course_status(
+			mobile,
+			class_no,
+			class_open_date,
+			status,
+			create_time
+		) VALUES (
+			#{mobile},
+			#{classNo},
+			#{classOpenDate},
+			#{status},
+			#{createTime}
+		)
+	</insert>
+	
+	
+	<update id="updateStockCourseStatus">
+		UPDATE act_stock_course_status SET 	
+		   <if test="status != null">
+				status = #{status},
+			</if>
+	        <if test="pushTime != null">
+				push_time = #{pushTime},
+			</if>
+			update_time = #{updateTime}
+		WHERE mobile = #{mobile} and class_open_date = #{classOpenDate} 
+	</update>
+	
+	<update id="update">
+		UPDATE act_stock_course_user SET 	
+			<if test="mobile != null and mobile != ''">
+				mobile = #{mobile},
+			</if>
+			<if test="openId != null and openId != ''">
+				open_id = #{openId},
+			</if>
+			<if test="wechatName != null and wechatName != ''">
+				wechat_name = #{wechatName},
+			</if>
+			<if test="customerId != null and customerId != ''">
+				customer_id = #{customerId},
+			</if>
+			<if test="accountOpenTime != null">
+				account_open_time = #{accountOpenTime},
+			</if>
+			<if test="learnedCourseNumber != null">
+				learned_course_number = #{learnedCourseNumber},
+			</if>
+			<if test="watchedLiveStream != null">
+				watched_live_stream = #{watchedLiveStream},
+			</if>
+			<if test="name != null and name != ''">
+				name = #{name},
+			</if>
+			<if test="receivingAddress != null and receivingAddress != ''">
+				receiving_address = #{receivingAddress},
+			</if>
+			<if test="receivingMobile != null and receivingMobile != ''">
+				receiving_mobile = #{receivingMobile},
+			</if>
+		    <if test="courseStatus != null and courseStatus != ''">
+				course_status = #{courseStatus},
+			</if>
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_stock_course_user
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

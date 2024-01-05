@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.quant.dao.ActQuantTeamLikeDao">
+    
+	<sql id="actQuantTeamLikeColumns">
+		a.id AS "id",
+		a.mobile AS "mobile",
+		a.user_id AS "userId",
+		a.open_id AS "openId",
+		a.team_id AS "teamId",
+		a.like_time AS "likeTime",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.is_deleted AS "isDeleted"
+	</sql>
+	
+	<sql id="actQuantTeamLikeJoins">
+	</sql>
+    
+	<select id="get" resultType="ActQuantTeamLike">
+		SELECT 
+			<include refid="actQuantTeamLikeColumns"/>
+		FROM act_quant_team_like a
+		<include refid="actQuantTeamLikeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActQuantTeamLike">
+		SELECT 
+			<include refid="actQuantTeamLikeColumns"/>
+		FROM act_quant_team_like a
+		<include refid="actQuantTeamLikeJoins"/>
+		<where>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+			<if test="dateFrom != null and dateTo != null">
+				AND a.create_time BETWEEN #{dateFrom} AND #{dateTo}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="ActQuantTeamLike">
+		SELECT 
+			<include refid="actQuantTeamLikeColumns"/>
+		FROM act_quant_team_like a
+		<include refid="actQuantTeamLikeJoins"/>
+		<where>
+			
+		</where>		
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_quant_team_like(
+			id,
+			mobile,
+			user_id,
+			open_id,
+			team_id,
+			like_time,
+			create_time,
+			update_time,
+			is_deleted
+		) VALUES (
+			#{id, jdbcType=VARCHAR},
+			#{mobile, jdbcType=VARCHAR},
+			#{userId, jdbcType=VARCHAR},
+			#{openId, jdbcType=VARCHAR},
+			#{teamId, jdbcType=VARCHAR},
+			#{likeTime, jdbcType=TIMESTAMP},
+			#{createTime, jdbcType=TIMESTAMP},
+			#{updateTime, jdbcType=TIMESTAMP},
+			#{isDeleted, jdbcType=INTEGER}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_quant_team_like SET 	
+			mobile = #{mobile},
+			user_id = #{userId},
+			open_id = #{openId},
+			team_id = #{teamId},
+			like_time = #{likeTime},
+			create_time = #{createTime},
+			update_time = #{updateTime},
+			is_deleted = #{isDeleted}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_quant_team_like
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.advertising.dao.ActAdvertisingDao">
+    
+	<sql id="actAdvertisingColumns">
+		a.id AS "id",
+		a.mobile AS "mobile",
+		a.page_encoding AS "pageEncoding",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.remarks AS "remarks",
+		a.market_account AS "marketAccount",
+		a.follow_status AS "followStatus",
+		a.market_mobile AS "marketMobile",
+		a.pgm   AS  "pgm",
+		a.kw    AS "kw",
+		a.grp   AS "grp",
+		a.pln  AS "pln",
+		a.chn  AS "chn"
+	</sql>
+	
+	<sql id="actAdvertisingJoins">
+	</sql>
+    
+	<select id="get" resultType="ActAdvertising">
+		SELECT 
+			<include refid="actAdvertisingColumns"/>
+		FROM act_advertising a
+		<include refid="actAdvertisingJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActAdvertising">
+		SELECT 
+			<include refid="actAdvertisingColumns"/>
+		FROM act_advertising a
+		<include refid="actAdvertisingJoins"/>
+		<where>
+			<if test="mobile != null and mobile != '' ">
+				AND a.mobile = #{mobile}
+			</if>
+			<if test="chn != null and chn != '' ">
+				AND a.chn = #{chn}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="ActAdvertising">
+		SELECT 
+			<include refid="actAdvertisingColumns"/>
+		FROM act_advertising a
+		<include refid="actAdvertisingJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_advertising(
+			id,
+		    mobile,
+			page_encoding,
+			create_time,
+		    remarks,
+		    market_account,
+		    follow_status,
+		    market_mobile,
+		    pgm,
+		    kw,
+		    grp,
+		    pln,
+		    chn
+		) VALUES (
+			#{id},
+			#{mobile},
+			#{pageEncoding},
+			#{createTime},
+		    #{remarks},
+		    #{marketAccount},
+		    #{followStatus},
+		    #{marketMobile},
+			#{pgm},
+			#{kw},
+			#{grp},
+			#{pln},
+		    #{chn}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_advertising SET
+		    mobile = #{mobile},
+			page_encoding = #{pageEncoding},
+			create_time = #{createTime},
+			update_time = #{updateTime},
+		    mobile = #{mobile},
+		    remarks = #{remarks},
+		    market_account = #{marketAccount},
+		    follow_status = #{followStatus}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_advertising
+		WHERE id = #{id}
+	</update>
+
+	<select id="findListMarketUser" resultType="MarketUserDto">
+		select LOGIN_NAME AS "account",mobile AS "marketMobile",chn from act_market_user
+		<where>
+			<if test="account != null and  account != ''">
+				AND LOGIN_NAME = #{account}
+			</if>
+			<if test="chn != null and  chn != ''">
+				AND chn = #{chn}
+			</if>
+		</where>
+	</select>
+</mapper>

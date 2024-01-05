@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wlzq.activity.base.dao.ActTeamDao" >
+
+  	<resultMap id="actTeamMap" type="com.wlzq.activity.base.model.ActTeam">
+	  <result property="teamSerial" column="teamSerial" jdbcType="VARCHAR"/>
+	  <result property="teamName" column="teamName" jdbcType="VARCHAR"/>  	
+	  <result property="template" column="template" jdbcType="VARCHAR"/>  
+	  <result property="createUserId" column="createUserId" jdbcType="VARCHAR"/>  	  
+	  <result property="createCustomerId" column="createCustomerId" jdbcType="VARCHAR"/> 
+	  <result property="createDate" column="createDate" jdbcType="TIMESTAMP"/>
+	  <result property="status" column="status" jdbcType="INTEGER"/>
+	  <result property="createUserName" column="createUserName" jdbcType="VARCHAR"/> 
+	  <result property="createPortrait" column="createPortrait" jdbcType="VARCHAR"/> 
+	  <result property="createNickName" column="createNickName" jdbcType="VARCHAR"/> 
+	  <result property="openId" column="openId" jdbcType="VARCHAR"/> 
+	</resultMap>
+	
+  <!-- 查询的列  start  -->
+  <sql id="team_columns" >
+  		a.team_serial as teamSerial,
+  		a.team_name as teamName,
+  		a.template as template,
+  		a.create_userid as createUserId,
+  		a.create_customerid as createCustomerId,
+  		a.create_date as createDate,
+		a.status AS status,
+		a.open_id AS openId
+  </sql>
+
+  <sql id="join_columns" >
+  		, b.nick_name as createNickName, 
+  		b.portrait as createPortrait, 
+  		c.user_name as createUserName
+  </sql>  
+  <!-- 查询的列  end  -->
+  
+  <sql id="actTeamJoins">
+  		LEFT JOIN acc_user b ON a.create_userid = b.user_id
+  		LEFT JOIN acc_customer c ON a.create_customerid = c.customer_id
+  </sql>
+  
+  <sql id="actTeamMemberJoins">
+  		LEFT JOIN act_team_member d ON a.team_serial = d.team_serial
+  </sql>
+
+  <!-- 返回条数  start  -->
+  <sql id = "rownum">
+  	<if test="rownum != null and rownum >= 0">
+  		rownum <![CDATA[<=]]> #{rownum}
+  	</if>
+  </sql>
+  <!-- 返回条数  end  -->
+  
+  <!-- 分页  start  -->
+  <sql id = "page">
+  	<if test="start != null and end != null and start >= 0 and end >= 0 ">
+  		limit #{start},#{end}
+  	</if>
+  </sql>
+  <!-- 分页  end  -->
+
+  <!-- 查询条件 start -->
+  <sql id="comm_where">
+  	1=1
+  		<if test="id != null and id != '' ">
+	  		and a.ID = #{id}
+	  	</if>
+  		<if test="teamSerial != null and teamSerial != '' ">
+	  		and a.team_serial = #{teamSerial}
+	  	</if>
+  		<if test="teamName != null and teamName != '' ">
+	  		and a.team_name = #{teamName}
+	  	</if>
+	  	<if test="template != null and template != '' ">
+	  		and a.template = #{template}
+	  	</if>
+  		<if test="createUserId != null and createUserId != '' ">
+	  		and a.create_userid = #{createUserId}
+	  	</if>
+  		<if test="createDate != null and createDate != '' ">
+	  		and a.create_date = #{createDate}
+	  	</if>
+  		<if test="status != null and status != '' ">
+	  		and a.status = #{status}
+	  	</if>
+  </sql>
+  <!-- 查询条件 end  -->
+  
+  <!-- 实体通用方法  start  -->
+  <select id="get" resultMap="actTeamMap">
+  	SELECT 
+  		<include refid="team_columns"></include>
+  		<include refid="join_columns"></include>
+  	FROM act_team a
+  		<include refid="actTeamJoins"></include>
+  	<where>
+  		<include refid="comm_where"></include>
+  	</where>
+  </select>
+  
+  <select id="findList" resultMap="actTeamMap">
+  	SELECT 
+  		<include refid="team_columns"></include>
+  		<include refid="join_columns"></include>
+  	FROM act_team a
+  		<include refid="actTeamJoins"></include>
+  	<where>
+  		a.status = #{actTeam.status}
+  		AND (b.user_id IS NOT NULL OR c.customer_id IS NOT NULL)
+  		<if test="rownum != null and rownum >= 0">
+  			AND rownum <![CDATA[<=]]> #{rownum}
+  	    </if>
+  	</where>
+  	ORDER BY a.create_date
+  </select>
+    
+	<select id="findCreateTeam" resultMap="actTeamMap">
+		SELECT 
+			<include refid="team_columns"></include>
+			<include refid="join_columns"></include>
+		FROM act_team a
+			<include refid="actTeamMemberJoins"></include>
+			<include refid="actTeamJoins"></include>
+		<where>
+			<if test="teamSerial != null and teamSerial != ''">
+				AND a.team_serial = #{teamSerial}
+			</if>
+			<if test="template != null and template != ''">
+				AND a.template = #{template}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND d.user_id = #{userId}
+			</if>
+			<if test="customerId != null and customerId != ''">
+				AND d.customer_id = #{customerId}
+			</if>
+		</where>
+		ORDER BY a.create_date DESC
+	</select>
+	
+	<select id="findMyCreateTeam" resultMap="actTeamMap">
+		SELECT 
+			<include refid="team_columns"></include>
+		FROM act_team a
+		<where>
+			rownum = 1
+			<if test="template != null and template != ''">
+				AND a.template = #{template}
+			</if>
+			<if test="customerId != null and customerId != ''">
+				AND a.create_customerid = #{customerId}
+			</if>
+		</where>
+		
+	</select>
+  <!-- 实体通用方法  end  -->
+  
+  <!-- 修改 start -->
+  		<update id="update">
+  			UPDATE act_team
+  			SET status = #{status}
+  			WHERE team_serial =#{teamSerial}
+  			AND create_customerid = #{createCustomerId}
+  		</update>
+  <!-- 修改 end -->
+
+  <!-- 新增 start -->
+        <insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+                INSERT INTO act_team(
+                        team_serial,
+                        team_name,
+                        template,
+                        create_userid,
+                        create_customerid,
+                        create_date,
+                        status,
+						open_id                        
+                ) VALUES (
+                        #{teamSerial, jdbcType=VARCHAR},
+                        #{teamName, jdbcType=VARCHAR},
+                        #{template, jdbcType=VARCHAR},
+                        #{createUserId, jdbcType=VARCHAR},
+                        #{createCustomerId, jdbcType=VARCHAR},
+                        #{createDate, jdbcType=TIMESTAMP},
+                        #{status, jdbcType=INTEGER},
+                        #{openId, jdbcType=INTEGER}
+                )
+        </insert>
+  <!-- 新增 end -->
+
+  <!-- 样本查询 -->
+  <select id="findSample" resultMap="actTeamMap">
+  	SELECT 
+  		<include refid="team_columns"></include>
+  		<include refid="join_columns"></include>
+  	FROM act_team SAMPLE(20) a
+  		<include refid="actTeamJoins"></include>
+  	<where>
+  		a.status = #{actTeam.status}
+  		AND (b.user_id IS NOT NULL OR c.customer_id IS NOT NULL)
+  		<if test="rownum != null and rownum >= 0">
+  			AND rownum <![CDATA[<=]]> #{rownum}
+  	    </if>
+  	</where>
+  </select>
+  
+</mapper>

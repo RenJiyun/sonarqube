@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.voteworks.dao.VoteWorksLikeDao">
+    
+	<sql id="voteWorksLikeColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.open_id AS "openId",
+		a.no AS "no",
+		a.tag AS "tag",
+		a.create_time AS "createTime"
+	</sql>
+	
+	<sql id="voteWorksLikeJoins">
+	</sql>
+    
+	<select id="get" resultType="VoteWorksLike">
+		SELECT 
+			<include refid="voteWorksLikeColumns"/>
+		FROM act_vote_works_like a
+		<include refid="voteWorksLikeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="likeCount" resultType="java.lang.Integer">
+		SELECT 
+			count(*)
+		FROM act_vote_works_like a
+		<where>
+			<if test="like.openId != null and like.openId != ''">
+				AND a.open_id = #{like.openId}
+			</if>
+			<if test="like.tag != null">
+				AND a.tag = #{like.tag}
+			</if>
+			<if test="like.userId != null and like.userId != ''">
+				AND a.user_id = #{like.userId}
+			</if>			
+			<if test="like.createTimeFrom != null">
+		  		AND a.create_time >= #{like.createTimeFrom}
+		  	</if>
+	  		<if test="like.createTimeTo != null">
+		  		<![CDATA[AND a.create_time <= #{like.createTimeTo}]]>
+		  	</if>
+			<if test="activitycode != null and activitycode != ''">
+				AND a.no in (select b.no from act_vote_works b where b.activitycode = #{activitycode} )
+			</if>
+		 </where>
+	</select>
+	
+	<select id="likeTotalPeople" resultType="java.lang.Long">
+		SELECT 
+	        count(distinct(a.open_id))
+	      FROM act_vote_works_like a
+	    <where>
+	 	    <![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+			<if test="no != null and no != ''">
+				AND a.no = #{no}
+			</if>
+			<if test="tag != null">
+				AND a.tag = #{tag}
+			</if>			
+			<if test="activitycode != null and activitycode != ''">
+				AND a.no in (select b.no from act_vote_works b where b.activitycode = #{activitycode})
+			</if>
+		</where>
+	</select>
+	
+	<select id="likes" resultType="LikeDto">
+		select c.nick_name  as "nickname",
+	       b.like_date  as "date",
+	       b.like_count as "likeCount"
+			  from (SELECT *
+			          FROM (SELECT row_.*, rownum rownum_
+			                  FROM (select a.open_id,
+			                               a.like_date,
+			                               count(a.id) as like_count,
+                                           max(a.create_time) as createtime
+			                          from act_vote_works_like a
+			                         <where>
+			                        	<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+										<if test="no != null and no != ''">
+											AND a.no = #{no}
+										</if>
+										<if test="tag != null">
+											AND a.tag = #{tag}
+										</if>										
+										<if test="activitycode != null and activitycode != ''">
+											AND a.no in (select d.no from act_vote_works d where d.activitycode = #{activitycode})
+										</if>
+									</where>
+			                         group by a.open_id, a.like_date
+			                         order by a.like_date desc,createtime desc) row_
+			                  WHERE <![CDATA[ rownum <= #{end} ]]>
+			                ) table_alias
+			         WHERE table_alias.rownum_ > #{start}) b
+			  left join wechat_user c
+			    on b.open_id = c.open_id
+	</select>
+	
+	<select id="findList" resultType="VoteWorksLike">
+		SELECT 
+			<include refid="voteWorksLikeColumns"/>
+		FROM act_vote_works_like a
+		<include refid="voteWorksLikeJoins"/>
+		<where>
+			<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+			<if test="like.no != null and like.no != ''">
+				AND a.no = #{like.no}
+			</if>
+			<if test="like.tag != null">
+				AND a.tag = #{like.tag}
+			</if>	
+			<if test="like.userId != null and like.userId != ''">
+				AND a.user_id = #{like.userId}
+			</if>		
+			<if test="activitycode != null and activitycode != ''">
+				AND a.no in (select b.no from act_vote_works b where b.activitycode = #{activitycode} )
+			</if>
+		</where>
+		order by a.no
+	</select>
+	
+	<select id="findAllList" resultType="VoteWorksLike">
+		SELECT 
+			<include refid="voteWorksLikeColumns"/>
+		FROM act_vote_works_like a
+		<include refid="voteWorksLikeJoins"/>
+		<where>
+			<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+			<if test="activitycode != null and activitycode != ''">
+				AND a.no in (select b.no from act_vote_works b where b.activitycode = #{activitycode} )
+			</if>
+		</where>		
+		<choose>
+			<when test="like.page !=null and like.page.orderBy != null and like.page.orderBy != ''">
+				ORDER BY ${like.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true">
+		INSERT INTO act_vote_works_like(
+			user_id,
+			open_id,
+			no,
+			tag,
+			like_date,
+			create_time
+		) VALUES (
+			#{userId, jdbcType=VARCHAR},
+			#{openId, jdbcType=VARCHAR},
+			#{no},
+			#{tag},
+			#{likeDate},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_vote_works_like SET 	
+			user_id = #{userId, jdbcType=VARCHAR},
+			open_id = #{openId, jdbcType=VARCHAR},
+			no = #{no},
+			tag = #{tag},
+			create_time = #{createTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_vote_works_like
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

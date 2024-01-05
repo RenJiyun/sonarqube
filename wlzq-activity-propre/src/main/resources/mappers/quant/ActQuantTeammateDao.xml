@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.quant.dao.ActQuantTeammateDao">
+    
+	<sql id="actQuantTeammateColumns">
+		a.id AS "id",
+		a.team_id AS "teamId",
+		a.name AS "name",
+		a.mobile AS "mobile",
+		a.email AS "email",
+		a.professor AS "professor",
+		a.professor_mobile AS "professorMobile",
+		a.professor_email AS "professorEmail",
+		a.professor_title AS "professorTitle",
+		a.university AS "university",
+		a.department AS "department",
+		a.major AS "major",
+		a.education AS "education",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.is_deleted AS "isDeleted"
+	</sql>
+	
+	<sql id="actQuantTeammateJoins">
+	</sql>
+    
+	<select id="get" resultType="ActQuantTeammate">
+		SELECT 
+			<include refid="actQuantTeammateColumns"/>
+		FROM act_quant_teammate a
+		<include refid="actQuantTeammateJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActQuantTeammate">
+		SELECT 
+			<include refid="actQuantTeammateColumns"/>
+		FROM act_quant_teammate a
+		<include refid="actQuantTeammateJoins"/>
+		<where>
+			<if test="teamId != null and teamId !=''">
+				AND a.team_id = #{teamId}
+			</if>
+			<if test="name != null and name !=''">
+				AND a.name = #{name}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="ActQuantTeammate">
+		SELECT 
+			<include refid="actQuantTeammateColumns"/>
+		FROM act_quant_teammate a
+		<include refid="actQuantTeammateJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_quant_teammate(
+			id,
+			team_id,
+			name,
+			mobile,
+			email,
+			professor,
+			professor_mobile,
+			professor_email,
+			professor_title,
+			university,
+			department,
+			major,
+			education,
+			create_time,
+			update_time,
+			is_deleted
+		) VALUES (
+			#{id},
+			#{teamId},
+			#{name},
+			#{mobile},
+			#{email},
+			#{professor},
+			#{professorMobile},
+			#{professorEmail},
+			#{professorTitle},
+			#{university},
+			#{department},
+			#{major},
+			#{education},
+			#{createTime},
+			#{updateTime},
+			#{isDeleted}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_quant_teammate SET 	
+			team_id = #{teamId},
+			name = #{name},
+			mobile = #{mobile},
+			email = #{email},
+			professor = #{professor},
+			professor_mobile = #{professorMobile},
+			professor_email = #{professorEmail},
+			professor_title = #{professorTitle},
+			university = #{university},
+			department = #{department},
+			major = #{major},
+			education = #{education},
+			create_time = #{createTime},
+			update_time = #{updateTime},
+			is_deleted = #{isDeleted}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_quant_teammate
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

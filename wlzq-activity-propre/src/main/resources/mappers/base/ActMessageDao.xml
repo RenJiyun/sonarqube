@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.base.dao.ActMessageDao">
+    
+	<sql id="actMessageColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.act_code AS "actCode",
+		a.msg_time AS "msgTime",
+		a.status AS "status",
+		a.content AS "content"
+	</sql>
+	
+	<select id="get" resultType="ActMessage">
+		SELECT 
+			<include refid="actMessageColumns"/>
+		FROM act_message a
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActMessage">
+		SELECT 
+			<include refid="actMessageColumns"/>
+		FROM act_message a
+		<where>
+			<if test="actCode != null and actCode != ''">
+				AND a.act_code = #{actCode}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="content != null and content != ''">
+				AND a.content LIKE 
+					<if test="dbName == 'oracle'">'%'||#{content}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{content}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{content},'%')</if>
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="ActMessage">
+		SELECT 
+			<include refid="actMessageColumns"/>
+		FROM act_message a
+		<where>
+			
+		</where>		
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_message(
+			user_id,
+			act_code,
+			msg_time,
+			status,
+			content
+		) VALUES (
+			#{userId},
+			#{actCode},
+			#{msgTime},
+			#{status},
+			#{content}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_message SET 	
+			user_id = #{userId},
+			act_code = #{actCode},
+			msg_time = #{msgTime},
+			status = #{status},
+			content = #{content}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findListByMaxId" resultType="ActMessage">
+		SELECT * FROM (
+			SELECT 
+				<include refid="actMessageColumns"/>
+				,b.nick_name AS "nickName"
+				,b.portrait AS "headImageUrl"
+			FROM act_message a
+			LEFT JOIN acc_user b ON b.user_id = a.user_id
+			<where>
+				AND a.status = 1
+				<if test="activityCode != null and activityCode != ''">
+					AND a.act_code = #{activityCode}
+				</if>
+				<if test="maxOrder != null and maxOrder != ''">
+					AND a.id > #{maxOrder}
+				</if>
+			</where>
+			ORDER BY a.id ASC) t 
+		<if test="maxLength != null and maxLength != ''">
+			WHERE rownum <![CDATA[ <= ]]> #{maxLength}
+		</if>
+	</select>
+	
+</mapper>

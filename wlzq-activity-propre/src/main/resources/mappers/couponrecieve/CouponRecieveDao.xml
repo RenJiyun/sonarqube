@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.couponreceive.dao.CouponRecieveDao">
+    
+	<sql id="couponRecieveColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.customer_id AS "customerId",
+		a.fund_account AS "fundAccount",
+		a.coupon_template AS "couponTemplate",
+		a.coupon_code AS "couponCode",
+		a.create_time AS "createTime"
+	</sql>
+	
+	<sql id="couponRecieveJoins">
+		LEFT JOIN sys_user u2 ON u2.id = a.user_id
+	</sql>
+    
+	<select id="get" resultType="CouponRecieve">
+		SELECT 
+			<include refid="couponRecieveColumns"/>
+		FROM act_coupon_recieve a
+		<include refid="couponRecieveJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	
+	<select id="findCount" resultType="java.lang.Integer">
+		SELECT 
+			 count(*)
+		FROM act_coupon_recieve a
+		<where>
+			<if test="customerId != null and customerId != ''">
+				AND a.customer_id = #{customerId}
+			</if>
+			<if test="couponTemplate != null and couponTemplate != ''">
+				AND a.coupon_template = #{couponTemplate}
+			</if>
+			<if test="createTimeFrom != null">
+				AND a.create_time >= #{createTimeFrom}
+			</if>
+			<if test="createTimeTo != null">
+				<![CDATA[ AND a.create_time < #{createTimeTo}]]>
+			</if>
+		</where>
+	</select>
+	
+	
+	<select id="findList" resultType="CouponRecieve">
+		SELECT 
+			<include refid="couponRecieveColumns"/>
+		FROM act_coupon_recieve a
+		<include refid="couponRecieveJoins"/>
+		<where>
+			<if test="customerId != null and customerId != ''">
+				AND a.customer_id = #{customerId}
+			</if>
+			<if test="createTimeFrom != null and createTimeFrom != ''">
+				AND a.create_time >= #{createTimeFrom}
+			</if>
+			<if test="createTimeTo != null and createTimeTo != ''">
+				<![CDATA[ AND a.create_time <= #{createTimeTo}]]>
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID">
+		INSERT INTO act_coupon_recieve(
+			user_id,
+			customer_id,
+			fund_account,
+			coupon_template,
+			coupon_code,
+			create_time
+		) VALUES (
+			#{userId},
+			#{customerId},
+			#{fundAccount},
+			#{couponTemplate},
+			#{couponCode},
+			#{createTime}
+		)
+	</insert>
+
+</mapper>

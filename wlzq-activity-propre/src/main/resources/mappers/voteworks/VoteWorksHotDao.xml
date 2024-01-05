@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.voteworks.dao.VoteWorksHotDao">
+    
+	<sql id="voteWorksHotColumns">
+		a.id AS "id",
+		a.no AS "no",
+		a.tag AS "tag",
+		nvl(a.hot,0) AS "hot",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime"
+	</sql>
+	
+	<sql id="voteWorksHotJoins">
+	</sql>
+    
+	<select id="get" resultType="VoteWorksHot">
+		SELECT 
+			<include refid="voteWorksHotColumns"/>
+		FROM act_vote_works_hot a
+		<include refid="voteWorksHotJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 查询活动的所有作品的总热度 -->
+	<select id="hotAll" resultType="java.lang.Long">
+		SELECT 
+			NVL(SUM(a.hot) ,0)
+		FROM act_vote_works_hot a
+		<where>
+			<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+			<if test="activitycode != null and activitycode != ''">
+				AND a.no in (select b.no from act_vote_works b where b.activitycode = #{activitycode} )
+			</if>
+		</where>
+	</select>
+	
+	<select id="findByNo" resultType="VoteWorksHot">
+		SELECT 
+			<include refid="voteWorksHotColumns"/>
+		FROM act_vote_works_hot a
+		<include refid="voteWorksHotJoins"/>
+		<where>
+			<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>	
+			<if test="no != null and no != ''">
+				AND a.no = #{no}
+			</if>
+			<if test="tag != null">
+				AND a.tag = #{tag}
+			</if>			
+			<if test="activitycode != null and activitycode != ''">
+				AND a.no in (select b.no from act_vote_works b where b.activitycode = #{activitycode} )
+			</if>
+		</where>
+	</select>
+	
+	<select id="findList" resultType="VoteWorksHot">
+		SELECT 
+			<include refid="voteWorksHotColumns"/>
+		FROM act_vote_works_hot a
+		<include refid="voteWorksHotJoins"/>
+		<where>
+			<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+			<if test="hot.no != null and hot.no != ''">
+				AND a.no = #{hot.no}
+			</if>
+			<if test="hot.tag != null">
+				AND a.tag = #{hot.tag}
+			</if>				
+			<if test="activitycode != null and activitycode != ''">
+				AND a.no in (select b.no from act_vote_works b where b.activitycode = #{activitycode} )
+			</if>
+		</where>
+		<choose>
+			<when test="hot.page !=null and hot.page.orderBy != null and hot.page.orderBy != ''">
+				ORDER BY ${hot.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="VoteWorksHot">
+		SELECT 
+			<include refid="voteWorksHotColumns"/>
+		FROM act_vote_works_hot a
+		<include refid="voteWorksHotJoins"/>
+		<where>
+			<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+			<if test="activitycode != null and activitycode != ''">
+				AND a.no in (select b.no from act_vote_works b where b.activitycode = #{activitycode} )
+			</if>
+		</where>		
+		<choose>
+			<when test="hot.page !=null and hot.page.orderBy != null and hot.page.orderBy != ''">
+				ORDER BY ${hot.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true">
+		INSERT INTO act_vote_works_hot(
+			no,
+			hot,
+			tag,
+			create_time
+		) VALUES (
+			#{no},
+			#{hot},
+			#{tag, jdbcType=INTEGER},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_vote_works_hot SET 	
+			no = #{no},
+			hot = #{hot},
+			tag = #{tag, jdbcType=INTEGER},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="hotAdd">
+		UPDATE act_vote_works_hot SET 	
+			hot = hot + 1,
+			update_time = #{updateTime}
+		WHERE no = #{no} and tag = #{tag}
+		AND <![CDATA[ create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_vote_works_hot
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

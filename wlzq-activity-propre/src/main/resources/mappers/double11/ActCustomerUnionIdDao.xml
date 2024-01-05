@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.double11.dao.ActCustomerUnionIdDao">
+
+    <resultMap type="com.wlzq.activity.double11.model.ActCustomerUnionId" id="actCustomerUnionIdMap">
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="actCustomerUnionIdColumns">
+        a.id AS "id",
+		a.mobile AS "mobile",
+		a.open_id AS "openId",
+		a.customer_id AS "customerId",
+        a.union_id AS "unionId",
+		a.create_time AS "createTime"
+    </sql>
+
+    <select id="findList" resultMap="actCustomerUnionIdMap">
+        SELECT
+        <include refid="actCustomerUnionIdColumns"/>
+        FROM act_customer_unionid a
+        <where>
+            <if test="mobile != null and mobile != ''">
+                AND a.mobile = #{mobile}
+            </if>
+            <if test="customerId != null and customerId != ''">
+                AND a.customer_id = #{customerId}
+            </if>
+        </where>
+        ORDER BY a.id DESC
+    </select>
+
+    <insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+        INSERT INTO act_customer_unionid(
+            mobile,
+            open_id,
+            customer_id,
+            union_id,
+            create_time
+        ) VALUES (
+                     #{mobile, jdbcType=VARCHAR},
+                     #{openId, jdbcType=VARCHAR},
+                     #{customerId, jdbcType=VARCHAR},
+                     #{unionId, jdbcType=INTEGER},
+                     #{createTime, jdbcType=TIMESTAMP}
+                 )
+    </insert>
+
+</mapper>

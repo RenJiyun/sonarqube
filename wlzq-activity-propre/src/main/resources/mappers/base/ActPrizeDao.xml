@@ -1,0 +1,724 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.base.dao.ActPrizeDao">
+    <resultMap type="com.wlzq.activity.base.model.ActPrize" id="prizeMap">
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+        <result property="receiveTime" column="receiveTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+        <sql id="actPrizeColumns">
+                a.id AS "id",
+                a.type AS "type",
+                a.code AS "code",
+                a.redeem_code AS "redeemCode",
+                a.card_no AS "cardNo",
+                a.card_password AS "cardPassword",
+                a.status AS "status",
+                a.create_time AS "createTime",
+                a.user_id as "userId",
+                a.open_id as "openId",
+                a.customer_id as "customerId",
+                a.activity_code AS "activityCode",
+                a.redenvelope_amt AS "redenvelopeAmt",
+                a.remark AS "remark",
+                a.mobile as "mobile",
+                a.update_time AS "updateTime",
+                a.receive_time AS "receiveTime"
+        </sql>
+
+        <sql id="actPrizeJoins">
+        </sql>
+
+        <select id="get" resultType="ActPrize">
+                SELECT
+                        <include refid="actPrizeColumns"/>
+                ,t.name as "name"
+                ,t.worth as "worth"
+                ,t.time as "time"
+                ,t.point as "point"
+                FROM act_prize a
+                        left join act_prize_type t on a.code = t.code
+                <include refid="actPrizeJoins"/>
+                WHERE a.id = #{id}
+        </select>
+
+        <select id="findByRedeem" resultType="ActPrize">
+                SELECT
+                        <include refid="actPrizeColumns"/>
+                FROM act_prize a
+                <include refid="actPrizeJoins"/>
+                WHERE a.redeem_code = #{redeemCode}
+                and rownum = 1
+        </select>
+
+        <select id="findPrizes" resultType="ActPrize">
+                SELECT
+                        <include refid="actPrizeColumns"/>
+                                ,b.name as "name"
+                                ,b.time as "time"
+                                ,b.worth as "worth"
+                        FROM act_prize a
+                           left join act_prize_type b on a.code = b.code
+                        WHERE a.id is null
+                <if test="userId != null and userId != ''">
+                union
+                SELECT
+                        <include refid="actPrizeColumns"/>
+                                ,b.name as "name"
+                                ,b.time as "time"
+                                ,b.worth as "worth"
+                        FROM act_prize a
+                           left join act_prize_type b on a.code = b.code
+                        where
+                                 (a.status = 2 or a.status = 3)
+                                 <if test="activityCodes != null and activityCodes.size() > 0">
+	                                 and a.activity_code in
+	                                 <foreach collection="activityCodes" item="code" index="index" open="(" close=")" separator=",">
+	                                  #{code}
+	                                </foreach>
+                                </if>
+                                 <if test="codes != null and codes > 0">
+	                                 and a.code in
+	                                 <foreach collection="codes" item="code" index="index" open="(" close=")" separator=",">
+	                                  #{code}
+	                                </foreach>
+                                </if>
+                                <if test="userId != null and userId != ''">
+                                	AND a.user_id = #{userId}
+                                </if>
+                                and (a.type = 1 or a.type = 2 or a.type = 3 or a.type = 5 or a.type =6 or a.type = 7 or a.type = 15)
+                <!-- 查询用户已占用的优惠券 -->
+                <if test="unionOccupy != null and unionOccupy != 0">
+                		union
+                                SELECT
+                                        <include refid="actPrizeColumns"/>
+                                        ,b.name as "name"
+                                		,b.time as "time"
+                                		,b.worth as "worth"
+                                FROM act_prize a
+                                   left join act_prize_type b on a.code = b.code
+                                where (a.status = 4
+                                <if test="customerId == null or customerId == ''">
+                               		 or a.status = 2  or a.status = 3
+                                </if>
+                                )
+                                        <if test="activityCodes != null and activityCodes.size() > 0">
+			                                 and a.activity_code in
+			                                 <foreach collection="activityCodes" item="code" index="index" open="(" close=")" separator=",">
+			                                  #{code}
+			                                </foreach>
+		                                </if>
+		                                <if test="codes != null and codes > 0">
+			                                 and a.code in
+			                                 <foreach collection="codes" item="code" index="index" open="(" close=")" separator=",">
+			                                  #{code}
+			                                </foreach>
+		                                </if>
+		                                <if test="userId != null and userId != ''">
+		                                	AND a.user_id = #{userId}
+		                                </if>
+		                                and a.type = 4
+                </if>
+                </if>
+                <if test="customerId != null and customerId != ''">
+                        union
+                                SELECT
+                                        <include refid="actPrizeColumns"/>
+                                        ,b.name as "name"
+                                		,b.time as "time"
+                                		,b.worth as "worth"
+                                FROM act_prize a
+                                   left join act_prize_type b on a.code = b.code
+                                where
+		                                (a.status = 2 or a.status = 3)
+                                         <if test="activityCodes != null and activityCodes.size() > 0">
+			                                 and a.activity_code in
+			                                 <foreach collection="activityCodes" item="code" index="index" open="(" close=")" separator=",">
+			                                  #{code}
+			                                </foreach>
+		                                </if>
+		                                <if test="codes != null and codes > 0">
+			                                 and a.code in
+			                                 <foreach collection="codes" item="code" index="index" open="(" close=")" separator=",">
+			                                  #{code}
+			                                </foreach>
+		                                </if>
+                                        AND a.customer_id = #{customerId}
+                                        <!-- and a.type = 4 -->
+                </if>
+        </select>
+        <!-- 用户所有奖品，包括 领取与未领取的优惠券 -->
+         <select id="findUserPrizes" resultType="ActPrize">
+            SELECT
+            <include refid="actPrizeColumns"/>
+                    ,b.name as "name"
+            FROM act_prize a
+               left join act_prize_type b on a.code = b.code
+            where
+                 a.status >= 2
+                 <if test="activityCode != null and activityCode != ''">
+                  and a.activity_code = #{activityCode}
+                </if>
+                 <if test="activityCodes != null and activityCodes.size() > 0">
+                     and a.activity_code in
+                     <foreach collection="activityCodes" item="item" index="index" open="(" close=")" separator=",">
+                      #{item}
+                    </foreach>
+                </if>
+                 <if test="codes != null and codes.size() > 0">
+                     and a.code in
+                     <foreach collection="codes" item="item1" index="index" open="(" close=")" separator=",">
+                      #{item1}
+                    </foreach>
+                </if>
+                 <if test="code != null and code != ''">
+                     AND a.code = #{code}
+                 </if>
+                 <if test="userId != null and userId != ''">
+                     and a.user_id = #{userId}
+                 </if>
+                 <if test="customerId != null and customerId != ''">
+                     and a.customer_id = #{customerId}
+                 </if>
+        </select>
+
+    <select id="findList" resultType="ActPrize">
+        SELECT
+        <include refid="actPrizeColumns"/>
+        ,b.name as "name"
+        ,b.worth as "worth"
+        ,b.limit_times_type as "limitTimesType"
+        ,b.max_times_daily as "maxTimesDaily"
+        ,c.nick_name as "nickName"
+        ,c.mobile as "mobile"
+        ,b.time as "time"
+        ,b.point as "point"
+        ,ac.name as "activityName"
+        FROM act_prize a
+        left join act_prize_type b on a.code = b.code
+        left join acc_user c on a.user_id = c.user_id
+        left join ACT_ACTIVITY ac on ac.code=a.ACTIVITY_CODE
+        <include refid="actPrizeJoins"/>
+        <where>
+            <if test="activityCode != null and activityCode != '' and (globalUniquePrizeType==null or globalUniquePrizeType==false) ">
+                AND a.activity_code = #{activityCode}
+            </if>
+            <if test="activityCodes != null and activityCodes.size() > 0">
+                AND a.activity_code in
+                <foreach collection="activityCodes" item="activityCode" open="(" close=")" separator=",">
+                    #{activityCode}
+                </foreach>
+            </if>
+            <choose>
+                <when test="uniqueType!=null and uniqueType==1">
+                    <if test="userId != null and userId != ''">
+                        AND a.user_id = #{userId}
+                    </if>
+                    <if test="mobile != null and mobile != ''">
+                        AND a.mobile = #{mobile}
+                    </if>
+                    <if test="customerId != null and customerId != ''">
+                        AND a.customer_id = #{customerId}
+                    </if>
+                </when>
+                <when test="uniqueType!=null and uniqueType==2">
+                    <if test="mobile != null and mobile != ''">
+                        AND ((a.user_id = #{userId}  AND a.mobile = #{mobile}) or a.customer_id = #{customerId})
+                    </if>
+                    <if test="mobile == null or mobile == ''">
+                        AND ((a.user_id = #{userId}) or a.customer_id = #{customerId})
+                    </if>
+                </when>
+                <when test="uniqueType!=null and uniqueType==3">
+                    <if test="userId != null and userId != ''">
+                        AND a.user_id = #{userId}
+                    </if>
+                    <if test="mobile != null and mobile != ''">
+                        AND a.mobile = #{mobile}
+                    </if>
+                </when>
+                <when test="uniqueType!=null and uniqueType==4">
+                    <if test="customerId != null and customerId != ''">
+                        AND a.customer_id = #{customerId}
+                    </if>
+                </when>
+                <otherwise>
+                    <if test="userId != null and userId != ''">
+                        AND a.user_id = #{userId}
+                    </if>
+                    <if test="mobile != null and mobile != ''">
+                        AND a.mobile = #{mobile}
+                    </if>
+                    <if test="customerId != null and customerId != ''">
+                        AND a.customer_id = #{customerId}
+                    </if>
+                </otherwise>
+            </choose>
+            <if test="type != null and type == 10">
+                AND (a.type = 1 or a.type = 4)
+            </if>
+            <if test="type != null and type != 10">
+                AND a.type = #{type}
+            </if>
+            <if test="status != null and status == 2">
+                AND (a.status = 2 or a.status = 3)
+            </if>
+            <if test="status != null and status != 2">
+                AND a.status = #{status}
+            </if>
+            <if test="code != null and code != ''">
+                AND a.code = #{code}
+            </if>
+            <if test="openId != null and openId != ''">
+                AND a.open_id = #{openId}
+            </if>
+            <if test="remark != null and remark != ''">
+                AND a.remark = #{remark}
+            </if>
+            <if test="updateTimeFrom != null and updateTimeTo != null">
+                AND (a.update_time is not null AND a.update_time <![CDATA[> #{updateTimeFrom}]]> AND a.update_time
+                <![CDATA[< #{updateTimeTo}]]>)
+            </if>
+            <if test="priceTypes != null and priceTypes.length > 0">
+                AND a.code in
+                <foreach collection="priceTypes" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+
+
+
+        <select id="findPrizeCount" resultType="Integer">
+                SELECT
+                        count(1)
+                FROM act_prize a
+                <include refid="actPrizeJoins"/>
+                <where>
+                		<if test="activityCode != null and activityCode != ''">
+                       		AND a.activity_code = #{activityCode}
+                		</if>
+                		<if test="activityCodes != null and activityCodes.size() > 0">
+                       		AND a.activity_code in
+                       		<foreach collection="activityCodes" item="activityCode" open="(" close=")" separator=",">
+                       			#{activityCode}
+                       		</foreach>
+                		</if>
+                        <if test="userId != null and userId != ''">
+                                AND a.user_id = #{userId}
+                        </if>
+                        <if test="customerId != null and customerId != ''">
+                                AND a.customer_id = #{customerId}
+                        </if>
+                        <if test="type != null and type == 10">
+                                AND (a.type = 1 or a.type = 4)
+                        </if>
+                        <if test="type != null and type != 10">
+                                AND a.type = #{type}
+                        </if>
+                        <if test="status != null and status == 2">
+                                AND (a.status = 2 or a.status = 3)
+                        </if>
+                        <if test="status != null and status != 2">
+                                AND a.status = #{status}
+                        </if>
+                        <if test="code != null and code != ''">
+                                AND a.code = #{code}
+                        </if>
+                        <if test="openId != null and openId != ''">
+                                AND a.open_id = #{openId}
+                        </if>
+                       <if test="remark != null and remark != ''">
+                                AND a.remark = #{remark}
+                        </if>
+                        <if test="updateTimeFrom != null and updateTimeTo != null">
+                                AND (a.update_time is not null AND a.update_time <![CDATA[> #{updateTimeFrom}]]> AND a.update_time <![CDATA[< #{updateTimeTo}]]>)
+                        </if>
+                        <if test="priceTypes != null and priceTypes.length > 0">
+                            AND a.code in
+                            <foreach collection="priceTypes" item="item" open="(" close=")" separator=",">
+                                #{item}
+                            </foreach>
+                        </if>
+                </where>
+        </select>
+
+        <select id="findAllList" resultType="ActPrize">
+                SELECT
+                        <include refid="actPrizeColumns"/>
+                FROM act_prize a
+                <include refid="actPrizeJoins"/>
+                <where>
+
+                </where>
+        </select>
+
+       <select id="findAvailablePrizeCode" resultType="String">
+                SELECT
+                        distinct code
+                FROM act_prize a
+                WHERE
+                     a.activity_code = #{activityCode}
+                        and a.status = 1
+        </select>
+
+        <select id="findAvailablePrizes" resultType="java.lang.Long">
+                SELECT
+                        id
+                FROM act_prize a
+                WHERE
+                     a.activity_code = #{activityCode}
+                        and a.status = 1
+        </select>
+
+        <select id="findAvailablePrizesByType" resultType="java.lang.Long">
+                SELECT
+                        id
+                FROM act_prize a
+                WHERE
+                     a.activity_code = #{activityCode}
+                    and a.code = #{code}
+                        and a.status = 1
+        </select>
+
+        <select id="findOneAvailablePrize" resultType="ActPrize">
+                SELECT
+                      <include refid="actPrizeColumns"/>
+                ,t.name as "name"
+                ,t.worth as "worth"
+                ,t.time as "time"
+                FROM act_prize a
+                        left join act_prize_type t on a.code = t.code
+                WHERE
+                     a.activity_code = #{activityCode}
+                    and a.code = #{code}
+                    and a.status = 1
+                    and a.user_id is null
+                    and a.customer_id is null
+                   and rownum = 1
+        </select>
+
+        <select id="findDistinctPrizes" resultType="ActPrize">
+                select a.code as "code",
+				       max(a.redeem_code) as "redeemCode",
+				       max(a.type) as "type"
+				  from act_prize a
+				 where a.activity_code = #{activityCode}
+				  group by a.code
+        </select>
+
+        <select id="findAvailablePrize" resultType="ActPrize">
+                SELECT
+                        <include refid="actPrizeColumns"/>
+                FROM act_prize a
+                WHERE
+                   a.code = #{code}
+                   and a.status = 1
+                   and rownum = 1
+        </select>
+
+        <select id="findCustomerPrizeList" resultType="PrizeCustomerDto">
+                SELECT * FROM (
+		                SELECT row_.*, rownum rownum_ FROM (
+			                SELECT
+			                        a.customer_id AS customerId,
+			                        b.name AS prizeName,
+			                        c.user_name AS userName,
+			                        c.mobile AS mobile
+			                FROM act_prize a
+			                LEFT JOIN act_prize_type b ON a.code = b.code
+			                LEFT JOIN acc_customer c ON a.customer_id = c.customer_id
+			                WHERE
+			                   a.activity_code = #{activityCode}
+			                   AND a.customer_id is not null
+			                   AND (a.status = 2 or a.status = 3)
+			                ORDER BY a.id DESC
+		                ) row_
+		                WHERE <![CDATA[ rownum <= #{end} ]]>
+		         )
+		         WHERE rownum_ > #{start}
+        </select>
+
+         <select id="findAllReceivedPrizes" resultType="ShowPrizeDto">
+                SELECT * FROM (
+		                SELECT row_.*, rownum rownum_ FROM (
+			                SELECT
+			                        b.type AS "type",
+			                        b.worth As "worth",
+			                        b.name AS "prizeName",
+			                        a.update_time as "createTime",
+			                        NVL(c.nick_name,REPLACE(c.mobile, substr(c.mobile,4,4), '****')) as "nickName"
+			                FROM act_prize a
+			                LEFT JOIN act_prize_type b ON a.code = b.code
+			                LEFT JOIN acc_user c ON a.user_id = c.user_id
+			                WHERE
+			                   a.activity_code = #{activityCode}
+			                   AND a.customer_id is not null
+			                   AND (a.status = 2 or a.status = 3)
+			                ORDER BY a.update_time DESC
+		                ) row_
+		                WHERE <![CDATA[ rownum <= #{end} ]]>
+		         )
+		         WHERE rownum_ > #{start}
+		   </select>
+
+        <insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+                INSERT INTO act_prize(
+                        id,
+                        type,
+                        code,
+                        card_no,
+                        card_password,
+                        status,
+                        create_time,
+                        is_deleted,
+                        activity_code,
+                        redenvelope_amt
+                ) VALUES (
+                        #{id},
+                        #{type},
+                        #{code},
+                        #{cardNo},
+                        #{cardPassword},
+                        #{status},
+                        #{createTime},
+                        #{isDeleted},
+                        #{activityCode},
+                        #{redenvelopeAmt,jdbcType=INTEGER}
+                )
+        </insert>
+
+        <insert id="insertBatch" parameterType="java.util.List">
+                INSERT INTO act_prize(
+                        id,
+                        type,
+                        code,
+                        customer_id,
+                        redeem_code,
+                        card_no,
+                        card_password,
+                        status,
+                        create_time,
+                        activity_code
+                )
+				<foreach collection="list" item="item" separator="UNION ALL">
+					SELECT
+                        #{item.id, jdbcType=INTEGER},
+                        #{item.type},
+                        #{item.code},
+                        #{item.customerId, jdbcType=VARCHAR},
+                        #{item.redeemCode, jdbcType=VARCHAR},
+                        #{item.cardNo, jdbcType=VARCHAR},
+                        #{item.cardPassword, jdbcType=VARCHAR},
+                        #{item.status},
+                        #{item.createTime, jdbcType=TIMESTAMP},
+                        #{item.activityCode}
+		            from dual
+		        </foreach>
+        </insert>
+
+        <update id="update">
+                UPDATE act_prize SET
+                        status = #{status},
+                        user_id =  #{userId,jdbcType=VARCHAR},
+                        open_id =  #{openId,jdbcType=VARCHAR},
+                        customer_id =  #{customerId,jdbcType=VARCHAR},
+                        mobile =  #{mobile,jdbcType=VARCHAR},
+                        remark = #{remark,jdbcType=VARCHAR},
+                        update_time = #{updateTime},
+                        activity_group_code = #{activityGroupCode},
+                        receive_time = #{receiveTime}
+                WHERE id = #{id}
+        </update>
+
+
+        <select id="findCustomerPrizes" resultType="ActPrize">
+        	SELECT
+            	<include refid="actPrizeColumns"/>
+            	,b.worth as "worth"
+                ,b.name as "name"
+                ,b.time as "time"
+            FROM act_prize a
+            LEFT JOIN act_prize_type b ON a.code = b.code
+            WHERE 1=1
+            AND a.customer_id = #{customerId}
+            <if test="activityCodes != null and activityCodes.size() > 0">
+	        	AND a.activity_code IN
+	        	<foreach collection="activityCodes" item="code" index="index" open="(" close=")" separator=",">
+	            	#{code}
+	            </foreach>
+            </if>
+            <if test="codes != null and codes.size() > 0">
+	        	AND a.code IN
+	        	<foreach collection="codes" item="code" index="index" open="(" close=")" separator=",">
+	            	#{code}
+	            </foreach>
+            </if>
+        </select>
+
+        <update id="delayPrize">
+                UPDATE act_prize SET
+                        remark = #{remark,jdbcType=VARCHAR},
+                        update_time = #{updateTime, jdbcType=TIMESTAMP}
+                WHERE id = #{id}
+        </update>
+
+        <select id="findDeliveredCount" resultType="java.lang.Integer">
+        	SELECT COUNT(1) counts FROM base_delivered_info a WHERE a.redeem_code=#{redeemCode}
+        </select>
+
+        <select id="findNoticeList" resultType="com.wlzq.activity.push.dto.RenewedReceivedNoticeDto">
+            SELECT DISTINCT a.customer_id as "customerId", a.mobile as "mobile"
+            FROM act_prize a
+            WHERE a.activity_code = #{activityCode}
+            And a.status = 2
+            AND a.update_time is not null
+            AND a.update_time BETWEEN #{updateTimeFrom} AND #{updateTimeTo}
+        </select>
+
+    <select id="findNotice" resultType="com.wlzq.activity.push.dto.NoticeDto">
+        SELECT
+            a.customer_id customerId,
+            b.mobile
+        FROM act_prize a
+        LEFT JOIN acc_customer b ON a.customer_id = b.customer_id
+        WHERE a.activity_code = #{activityCode}
+          AND a.status = 2
+          AND a.update_time is not null
+          AND a.update_time BETWEEN #{updateTimeFrom} AND #{updateTimeTo}
+    </select>
+    <select id="findLotteryActPrize" resultType="com.wlzq.activity.base.model.ActPrize">
+        select <include refid="actPrizeColumns"/>,l.is_hit hit
+        from act_lottery l
+        left join act_prize a
+        on l.prize = a.id
+        <where>
+            <if test="activityCode != null and activityCode != ''">
+                AND l.activity = #{activityCode}
+            </if>
+            <if test="userId != null and userId != ''">
+                AND l.user_id = #{userId}
+            </if>
+        </where>
+
+    </select>
+
+
+    <select id="queryUserPrizes" resultType="com.wlzq.activity.base.model.ActPrize">
+        SELECT <include refid="actPrizeColumns"/>
+        FROM act_prize a
+        where a.status >= 2
+        <if test="codes != null and codes.size() > 0">
+            and a.code in
+            <foreach collection="codes" item="code" index="index" open="(" close=")" separator=",">
+                #{code}
+            </foreach>
+        </if>
+        <if test="userId != null and userId != ''">
+            and a.user_id = #{userId}
+        </if>
+        <if test="customerId != null and customerId != ''">
+            and a.customer_id = #{customerId}
+        </if>
+    </select>
+
+
+    <select id="queryLastPrizes" resultMap="prizeMap">
+        SELECT *
+        FROM (SELECT row_.*
+        FROM (
+            SELECT <include refid="actPrizeColumns"/>,rownum rn
+            FROM act_prize a
+            where a.status = 2
+            <if test="prizeCodes != null and prizeCodes.size() > 0">
+                and a.code in
+                <foreach collection="prizeCodes" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="activityCode != null and activityCode != ''">
+                AND a.ACTIVITY_CODE = #{activityCode}
+            </if>
+            ORDER BY UPDATE_TIME desc) row_
+        WHERE   rownum =1)
+    </select>
+
+    <select id="getUserPrizeList" resultMap="prizeMap">
+        SELECT
+        <include refid="actPrizeColumns"/>
+        ,b.name as "name"
+        ,b.worth as "worth"
+        ,b.limit_times_type as "limitTimesType"
+        ,b.max_times_daily as "maxTimesDaily"
+        ,c.nick_name as "nickName"
+        ,c.mobile as "mobile"
+        ,b.time as "time"
+        ,b.point as "point"
+        ,ac.name as "activityName"
+        FROM act_prize a
+        left join act_prize_type b on a.code = b.code
+        left join acc_user c on a.user_id = c.user_id
+        left join ACT_ACTIVITY ac on ac.code=a.ACTIVITY_CODE
+        <include refid="actPrizeJoins"/>
+        <where>
+            <if test="activityCode != null and activityCode != ''">
+                AND a.activity_code = #{activityCode}
+            </if>
+            <if test="activityGroupCode != null and activityGroupCode != ''">
+                AND a.activity_group_code = #{activityGroupCode}
+            </if>
+            <if test="userId != null and userId != ''">
+                AND a.user_id = #{userId}
+            </if>
+            <if test="mobile != null and mobile != ''">
+                AND a.mobile = #{mobile}
+            </if>
+            <if test="customerId != null and customerId != ''">
+                AND a.customer_id = #{customerId}
+            </if>
+            <if test="code != null and code != ''">
+                AND a.code = #{code}
+            </if>
+            <if test="ids != null and ids.size() > 0">
+                and a.id in
+                <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="status != null">
+                AND a.status = #{status}
+            </if>
+            <if test="priceTypes != null and priceTypes.length > 0">
+                AND a.code in
+                <foreach collection="priceTypes" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="findSpecialPrizes" resultType="ShowPrizeDto">
+         SELECT
+             b.type AS "type",
+             b.worth As "worth",
+             b.name AS "prizeName",
+             a.update_time as "createTime",
+             NVL(c.nick_name,REPLACE(c.mobile, substr(c.mobile,4,4), '****')) as "nickName"
+         FROM act_prize a
+                  LEFT JOIN act_prize_type b ON a.code = b.code
+                  LEFT JOIN acc_user c ON a.user_id = c.user_id
+         WHERE
+             a.activity_code = #{activityCode}
+           AND a.customer_id is not null
+           AND (a.status = 2 or a.status = 3)
+           AND a.code in
+            <foreach collection="specialPrizeTypes" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+         ORDER BY a.update_time DESC
+    </select>
+
+</mapper>

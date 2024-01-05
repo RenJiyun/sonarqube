@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.guess51.dao.GuessLoginRecordDao">
+    
+	<sql id="GuessLoginRecordColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.create_time AS "createTime"
+	</sql>
+	
+	<sql id="GuessLoginRecordJoins">
+	</sql>
+    
+	<select id="get" resultType="GuessLoginRecord">
+		SELECT 
+			<include refid="GuessLoginRecordColumns"/>
+		FROM ACT_GUESS_LOGIN_RECORD a
+		<include refid="GuessLoginRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findLogin" resultType="GuessLoginRecord">
+		SELECT 
+			<include refid="GuessLoginRecordColumns"/>
+		FROM ACT_GUESS_LOGIN_RECORD a
+		<include refid="GuessLoginRecordJoins"/>
+		WHERE a.user_id = #{userId}
+		and a.create_time >= #{createTimeFrom}
+		and <![CDATA[  a.create_time <= #{createTimeTo}]]>
+	</select>
+	
+	
+	<select id="findList" resultType="GuessLoginRecord">
+		SELECT 
+			<include refid="GuessLoginRecordColumns"/>
+		FROM ACT_GUESS_LOGIN_RECORD a
+		<include refid="GuessLoginRecordJoins"/>
+		<where>
+			
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GuessLoginRecord">
+		SELECT 
+			<include refid="GuessLoginRecordColumns"/>
+		FROM ACT_GUESS_LOGIN_RECORD a
+		<include refid="GuessLoginRecordJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" >
+		INSERT INTO ACT_GUESS_LOGIN_RECORD(
+			user_id,
+			create_time
+		) VALUES (
+			#{userId},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE ACT_GUESS_LOGIN_RECORD SET 	
+			user_id = #{userId},
+			create_time = #{createTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM ACT_GUESS_LOGIN_RECORD
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

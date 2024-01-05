@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.brokeragemeeting.dao.ActBrokeragemeetingPersonnelDao">
+    
+	<sql id="actBrokeragemeetingPersonnelColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.open_id AS "openId",
+		a.name AS "name",
+		a.nick_name AS "nickName",
+		a.head_image_url AS "headImageUrl",
+		a.is_deleted AS "isDeleted",
+		a.department AS "department",
+		a.is_ligted_up AS "isLigtedUp",
+		a.is_need_unveiling AS "isNeedUnveiling",
+		a.sign_order AS "signOrder",
+		a.is_unveiled AS "isUnveiled"
+	</sql>
+	
+	<sql id="actBrokeragemeetingPersonnelJoins">
+	</sql>
+    
+	<select id="get" resultType="ActBrokeragemeetingPersonnel">
+		SELECT 
+			<include refid="actBrokeragemeetingPersonnelColumns"/>
+		FROM act_brokeragemeeting_personnel a
+		<include refid="actBrokeragemeetingPersonnelJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActBrokeragemeetingPersonnel">
+		SELECT 
+			<include refid="actBrokeragemeetingPersonnelColumns"/>
+		FROM act_brokeragemeeting_personnel a
+		<include refid="actBrokeragemeetingPersonnelJoins"/>
+		<where>
+			
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="openId != null and openId != ''">
+				AND a.open_id = #{openId}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name = #{name}
+			</if>
+			<if test="nickName != null and nickName != ''">
+				AND a.nick_name LIKE '%'||#{nickName}||'%'
+			</if>
+			<if test="isDeleted != null and isDeleted != ''">
+				AND a.is_deleted = #{isDeleted}
+			</if>
+			<if test="department != null and department != ''">
+				AND a.department = #{department}
+			</if>
+			<if test="isLigtedUp != null and isLigtedUp != ''">
+				AND a.is_ligted_up = #{isLigtedUp}
+			</if>
+			<if test="isNeedUnveiling != null and isNeedUnveiling != ''">
+				AND a.is_need_unveiling = #{isNeedUnveiling}
+			</if>
+			<if test="signOrder != null and signOrder != ''">
+				AND a.sign_order = #{signOrder}
+			</if>
+			<if test="isUnveiled != null and isUnveiled != ''">
+				AND a.is_unveiled = #{isUnveiled}
+			</if>
+		</where>
+		ORDER BY a.sign_order,a.id
+	</select>
+	
+	<select id="findAllList" resultType="ActBrokeragemeetingPersonnel">
+		SELECT 
+			<include refid="actBrokeragemeetingPersonnelColumns"/>
+		FROM act_brokeragemeeting_personnel a
+		<include refid="actBrokeragemeetingPersonnelJoins"/>
+		<where>
+			
+		</where>
+		ORDER BY a.sign_order,a.id	
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_brokeragemeeting_personnel(
+			user_id,
+			open_id,
+			name,
+			nick_name,
+			head_image_url,
+			is_deleted,
+			department,
+			is_ligted_up,
+			is_need_unveiling,
+			sign_order,
+			is_unveiled
+		) VALUES (
+			#{userId, jdbcType=VARCHAR},
+			#{openId, jdbcType=VARCHAR},
+			#{name, jdbcType=VARCHAR},
+			#{nickName, jdbcType=VARCHAR},
+			#{headImageUrl, jdbcType=VARCHAR},
+			#{isDeleted, jdbcType=INTEGER},
+			#{department, jdbcType=VARCHAR},
+			#{isLigtedUp, jdbcType=INTEGER},
+			#{isNeedUnveiling, jdbcType=INTEGER},
+			#{signOrder, jdbcType=VARCHAR},
+			#{isUnveiled, jdbcType=INTEGER}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_brokeragemeeting_personnel SET 	
+			user_id = #{userId, jdbcType=VARCHAR},
+			open_id = #{openId, jdbcType=VARCHAR},
+			name = #{name, jdbcType=VARCHAR},
+			nick_name = #{nickName, jdbcType=VARCHAR},
+			head_image_url = #{headImageUrl, jdbcType=VARCHAR},
+			is_deleted = #{isDeleted, jdbcType=INTEGER},
+			department = #{department, jdbcType=VARCHAR},
+			is_ligted_up = #{isLigtedUp, jdbcType=INTEGER},
+			is_need_unveiling = #{isNeedUnveiling, jdbcType=INTEGER},
+			sign_order = #{signOrder, jdbcType=VARCHAR},
+			is_unveiled = #{isUnveiled, jdbcType=INTEGER}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_brokeragemeeting_personnel
+		WHERE id = #{id}
+	</update>
+	
+	
+	<select id="findNeedUnveilingSigninList" resultType="ActBrokeragemeetingPersonnel">
+		SELECT 
+			<include refid="actBrokeragemeetingPersonnelColumns"/>
+			,b.signin_Time AS "signinTime"
+			,b.act_code AS "actCode"
+			,b.status AS "signinStatus"
+		FROM act_brokeragemeeting_personnel a
+		LEFT JOIN act_signin b ON a.user_id= b.user_id
+		<where>
+			a.is_need_unveiling = 1
+			AND b.act_code = 'ACTIVITY.BROKERAGECONFERENCE.SIGNIN'
+		</where>
+		ORDER BY a.id
+	</select>
+	
+	<select id="findListSigninList" resultType="ActBrokeragemeetingPersonnel">
+		SELECT * FROM (
+			SELECT 
+				<include refid="actBrokeragemeetingPersonnelColumns"/>
+				,b.signin_Time AS "signinTime"
+				,b.act_code AS "actCode"
+				,b.status AS "signinStatus"
+			FROM act_brokeragemeeting_personnel a
+			LEFT JOIN act_signin b ON a.user_id= b.user_id
+			<include refid="actBrokeragemeetingPersonnelJoins"/>
+			<where>
+			    1=1
+				AND a.sign_order IS NOT NULL
+				AND a.is_deleted = 0
+				AND b.status = 1
+				AND b.act_code = 'ACTIVITY.BROKERAGECONFERENCE.SIGNIN'
+				<if test="maxOrder != null and maxOrder != ''">
+					AND a.sign_order > #{maxOrder}
+				</if>
+			</where>
+			ORDER BY b.signin_Time,a.sign_order,a.id) t 
+		<if test="maxLength != null and maxLength != ''">
+			WHERE rownum <![CDATA[ <= ]]> #{maxLength}
+		</if>
+	</select>
+	
+	<select id="findMaxId" resultType="java.lang.Integer" useCache="false" flushCache="true" >
+       select BROKERAGEMEET_SIGNCODE_SEQ_PK.NEXTVAL FROM DUAL
+    </select>
+    
+    <update id="alterStep">
+		alter sequence BROKERAGEMEET_SIGNCODE_SEQ_PK increment by ${step}
+	</update>
+	
+	<update id="clearSigninCode">
+		update ACT_BROKERAGEMEETING_PERSONNEL t set t.sign_order = null where t.sign_order is not null
+	</update>
+	
+	<update id="clearUnveiled">
+		update ACT_BROKERAGEMEETING_PERSONNEL t set t.is_unveiled = 0 where t.is_unveiled = 1
+	</update>
+</mapper>

@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.virtualfin.dao.ActGoodsFlowDao">
+    <resultMap type="com.wlzq.activity.virtualfin.model.ActGoodsFlow" id="actGoodsFlowMap">
+    	<result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+    	<result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    
+	<sql id="actGoodsFlowColumns">
+		a.id AS "id",
+		a.mobile AS "mobile",
+		a.user_id AS "userId",
+		a.open_id AS "openId",
+		a.customer_id AS "customerId",
+		a.flag AS "flag",
+		a.activity_code AS "activityCode",
+		a.task_code AS "taskCode",
+		a.product_code AS "productCode",
+		a.goods_code AS "goodsCode",
+		a.goods_quantity AS "goodsQuantity",
+		a.used_goods_quantity AS "usedGoodsQuantity",
+		a.order_id AS "orderId",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.is_deleted AS "isDeleted",
+		a.biz_code AS "bizCode"
+	</sql>
+	
+	<sql id="actGoodsFlowJoins">
+	</sql>
+    
+	<select id="get" resultMap="actGoodsFlowMap">
+		SELECT 
+			<include refid="actGoodsFlowColumns"/>
+		FROM act_goods_flow a
+		<include refid="actGoodsFlowJoins"/>
+		<where>
+			<if test="id != null">
+				AND a.id = #{id}
+			</if>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+			<if test="activityCode != null and activityCode != ''">
+				AND a.activity_code = #{activityCode}
+			</if>
+			<if test="taskCode != null and taskCode != ''">
+				AND a.task_code = #{taskCode}
+			</if>
+			<if test="customerId != null and customerId != ''">
+				AND a.customer_id = #{customerId}
+			</if>
+			<if test="bizCode != null and bizCode != ''">
+				AND a.biz_code = #{bizCode}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="createTimeStart != null">
+				AND a.create_time >= #{createTimeStart}
+			</if>
+			<if test="createTimeEnd != null">
+				AND a.create_time &lt;= #{createTimeEnd}
+			</if>
+		</where>
+
+	</select>
+	
+	<select id="findList" resultMap="actGoodsFlowMap">
+		<if test="page != null">
+			SELECT *
+				FROM (SELECT row_.*,rownum rownum_
+					FROM (
+		</if>
+					SELECT 
+						<include refid="actGoodsFlowColumns"/>
+						,b.name AS "taskName"
+						,c.name AS "productName"
+						,d.name AS "goodsName"
+					FROM act_goods_flow a
+					LEFT JOIN act_task b ON a.task_code = b.code
+					LEFT JOIN act_fin_product c ON a.product_code = c.code AND a.ACTIVITY_CODE =c.ACTIVITY_CODE
+					LEFT JOIN act_task_goods d ON a.goods_code = d.code
+					<include refid="actGoodsFlowJoins"/>
+					<where>
+						<if test="activityCode != null and activityCode != ''">
+							AND a.activity_code = #{activityCode}
+						</if>
+						<if test="taskCode != null and taskCode != ''">
+							AND a.task_code = #{taskCode}
+						</if>
+						<if test="mobile != null and mobile != ''">
+							AND a.mobile = #{mobile}
+						</if>
+						<if test="customerId != null and customerId != ''">
+							AND a.customer_id = #{customerId}
+						</if>
+						<if test="taskCodeList != null and taskCodeList.size() > 0">
+							AND a.task_code in
+							<foreach collection="taskCodeList" item="item" open="(" close=")" separator=",">
+								#{item}
+							</foreach>
+						</if>
+						<if test="flag != null">
+							AND a.flag = #{flag}
+						</if>
+						<if test="orderId != null and orderId != ''">
+							AND a.order_id = #{orderId}
+						</if>
+						<if test="createTimeStart != null">
+							AND a.create_time >= #{createTimeStart}
+						</if>
+						<if test="createTimeEnd != null">
+							AND a.create_time &lt;= #{createTimeEnd}
+						</if>
+					</where>
+					ORDER BY a.id DESC
+		<if test="page != null">
+						) row_
+					WHERE <![CDATA[ rownum <= #{page.end} ]]>
+				) table_alias
+			WHERE table_alias.rownum_ > #{page.start}
+		</if>
+	</select>
+
+	<select id="getDoTaskCount" resultType="Integer">
+			SELECT 
+				<if test="isDaily == 1">
+					max(count(1))
+				</if>
+				<if test="isDaily != 1">
+					count(1)
+				</if>				
+			FROM act_goods_flow a 
+			<where>
+				<if test="activityCode != null and activityCode != ''">
+					AND a.activity_code = #{activityCode}
+				</if>
+				<if test="taskCode != null and taskCode != ''">
+					AND a.task_code = #{taskCode}
+				</if>
+				<if test="mobile != null and mobile != ''">
+					AND a.mobile = #{mobile}
+				</if>
+			</where>
+			<if test="isDaily == 1">
+				GROUP BY to_char(a.create_time, 'yyyymmdd')
+			</if>
+	</select>
+		
+	<select id="findAllList" resultMap="actGoodsFlowMap">
+		SELECT 
+			<include refid="actGoodsFlowColumns"/>
+		FROM act_goods_flow a
+		<include refid="actGoodsFlowJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="getBalance" resultType="Double">
+		SELECT 
+			nvl(sum(a.goods_quantity), 0)
+		FROM act_goods_flow a
+		<include refid="actGoodsFlowJoins"/>
+		<where>
+			<if test="activityCode != null and activityCode != ''">
+				AND a.activity_code = #{activityCode}
+			</if>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+			<if test="goodsCode != null and goodsCode != ''">
+				AND a.goods_code = #{goodsCode}
+			</if>
+		</where>
+	</select>
+
+	<select id="getLastAmountFlow" resultType="com.wlzq.activity.virtualfin.dto.LastAmountFlowResDto">
+		select * from (
+			  SELECT a."MOBILE" as mobile,a.goods_quantity as expAmount FROM act_goods_flow a
+			  where a.activity_code = #{activityCode} and a.flag=1
+			  order by a.id desc )
+		where rownum &lt;=10
+	</select>
+
+	<select id="list" resultMap="actGoodsFlowMap">
+		SELECT <include refid="actGoodsFlowColumns"/> FROM act_goods_flow a
+		<where>
+			<if test="activityCode != null and activityCode != ''">
+				AND a.activity_code = #{activityCode}
+			</if>
+			<if test="taskCode != null and taskCode != ''">
+				AND a.task_code = #{taskCode}
+			</if>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="customerId != null and customerId != ''">
+				AND a.customer_id = #{customerId}
+			</if>
+			<if test="taskCodeList != null and taskCodeList.size() > 0">
+				AND a.task_code in
+				<foreach collection="taskCodeList" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="flag != null">
+				AND a.flag = #{flag}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="bizCode != null and bizCode != ''">
+				AND a.biz_code = #{bizCode}
+			</if>
+			<if test="createTimeStart != null">
+				AND a.create_time >= #{createTimeStart}
+			</if>
+			<if test="createTimeEnd != null">
+				AND a.create_time &lt;= #{createTimeEnd}
+			</if>
+
+		</where>
+	</select>
+    <select id="getAllByBizCodes" resultType="java.lang.String">
+		SELECT BIZ_CODE FROM ACT_GOODS_FLOW a
+		WHERE
+		    	a.USER_ID = #{userId}
+		  AND 	a.GOODS_CODE = #{goodsCode}
+		  AND 	a.ACTIVITY_CODE = #{activityCode}
+	</select>
+
+	<select id="saleRanking" resultType="com.wlzq.activity.double11.dto.SaleRankingDto">
+		select
+		rownum as sort,
+		case
+			when rownum <![CDATA[>=1]]>  and rownum <![CDATA[<=5]]>  and goodsQuantity <![CDATA[>=]]>  1111 then 1000
+			when rownum <![CDATA[>5]]>  and rownum <![CDATA[<=10]]>  and goodsQuantity <![CDATA[>=]]>  1111 then 500
+		end as reward,
+		t.*
+		from (
+			select
+			sum(nvl(a.GOODS_QUANTITY,0)) as goodsQuantity,
+			max(a.create_time) as createTime,
+			COUNT(DISTINCT a.mobile) AS userCount,
+			a.RECOMMEND_MOBILE as recommendMobile,
+			b.USER_NAME as recommendName,
+			b.BRANCHNO as branchNo,
+			c.shortname as shortName
+			from ACT_GOODS_FLOW a
+			left join sale_whitelist b on a.recommend_mobile = b.MOBILE
+			left join base_branch c on b.BRANCHNO=c.branchno
+			where
+				a.flag=1 and a.RECOMMEND_MOBILE is not null and a.activity_code=#{activityCode} AND b.status=1 and b.BRANCHNO not in ('8888','999150')
+				and a.create_time <![CDATA[ >= ]]> #{startTime} and a.create_time <![CDATA[<= ]]> #{endTime}
+			group by a.RECOMMEND_MOBILE, b.USER_NAME,b.BRANCHNO, c.shortname
+			order by goodsQuantity desc,userCount desc ,createTime asc
+		) t where rownum <![CDATA[ <= ]]> 15
+	</select>
+
+	<select id="branchRanking" resultType="com.wlzq.activity.double11.dto.BranchRankingDto">
+		select
+		rownum as sort,
+		case
+		when rownum = 1 and goodsQuantity <![CDATA[ >= ]]> 11111 then 3000
+		when rownum = 2 and goodsQuantity <![CDATA[ >= ]]> 11111 then 2000
+		when rownum = 3 and goodsQuantity <![CDATA[ >= ]]> 11111 then 1000
+		end as reward,
+		t.*
+		from (
+			select
+			sum(nvl(a.GOODS_QUANTITY,0)) as goodsQuantity,
+			max(a.create_time) as createTime,
+			COUNT(DISTINCT a.mobile) AS userCount,
+			b.BRANCHNO as branchNo,
+			c.shortname as shortName
+			from ACT_GOODS_FLOW a
+			left join sale_whitelist b on a.recommend_mobile = b.MOBILE
+			left join base_branch c on b.BRANCHNO=c.branchno
+			where
+				a.flag=1 and a.RECOMMEND_MOBILE is not null and a.activity_code=#{activityCode} AND b.status=1 and b.BRANCHNO not in ('8888','999150')
+				and a.create_time <![CDATA[ >= ]]> #{startTime} and a.create_time <![CDATA[<= ]]> #{endTime}
+			group by b.BRANCHNO, c.shortname
+			order by goodsQuantity desc,userCount desc ,createTime asc
+		) t where rownum <![CDATA[ <= ]]> 6
+	</select>
+
+	<select id="myRankingInfo" resultType="com.wlzq.activity.double11.dto.MyRankingInfoDto">
+		SELECT
+		t.sort,
+		t.myGoodsQuantity
+		FROM (
+		SELECT
+			ROW_NUMBER() OVER (
+			                   ORDER BY SUM(NVL(a.GOODS_QUANTITY, 0)) DESC,COUNT(DISTINCT a.mobile) desc ,max(a.create_time)
+		                      ) AS sort,
+			SUM(NVL(a.GOODS_QUANTITY, 0)) AS myGoodsQuantity,
+		    a.RECOMMEND_MOBILE AS recommendMobile
+		FROM ACT_GOODS_FLOW a
+		left join sale_whitelist b on a.recommend_mobile = b.MOBILE
+		WHERE
+			a.flag=1 and a.RECOMMEND_MOBILE is not null and a.activity_code=#{activityCode} AND b.status=1 and b.BRANCHNO not in ('8888','999150')
+			and a.create_time <![CDATA[ >= ]]> #{startTime} and a.create_time <![CDATA[<= ]]> #{endTime}
+		GROUP BY a.RECOMMEND_MOBILE
+		) t
+		WHERE t.recommendMobile = #{recommendMobile}
+	</select>
+
+	<select id="myTaskIntegralInfo" resultType="com.wlzq.activity.double11.dto.TaskIntegralInfo">
+		SELECT *
+		FROM (SELECT row_.*,rownum rownum_
+		FROM (
+			select
+				a.create_time as createTime,
+				a.activity_code AS "activityCode",
+				a.task_code AS "taskCode",
+				a.mobile as mobile,
+				CASE
+					WHEN c.USER_NAME IS NOT NULL THEN c.USER_NAME || '完成"' || b.name || '"'
+					WHEN d.USER_NAME IS NOT NULL THEN d.USER_NAME || '完成"' || b.name || '"'
+					ELSE a.mobile || '完成"' || b.name || '"'
+				END AS detail,
+				a.goods_quantity as goodsQuantity
+				from ACT_GOODS_FLOW a
+				left join act_task b on a.task_code= b.code
+				LEFT JOIN acc_customer c ON c.CUSTOMER_ID = a.CUSTOMER_ID
+				LEFT JOIN acc_user d ON d.MOBILE = a.mobile
+			WHERE
+				a.flag=1 and a.RECOMMEND_MOBILE = #{recommendMobile}
+		        and a.activity_code=#{activityCode}
+				and a.create_time <![CDATA[ >= ]]> #{startTime}
+		        and a.create_time <![CDATA[ <= ]]> #{endTime}
+			ORDER BY a.create_time desc
+			) row_
+		WHERE <![CDATA[ rownum <= #{page.end} ]]>
+		) table_alias
+		WHERE table_alias.rownum_ > #{page.start}
+	</select>
+
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_goods_flow(
+			mobile,
+			user_id,
+			open_id,
+			customer_id,
+			flag,
+			activity_code,
+			task_code,
+			product_code,
+			order_id,
+			goods_code,
+			goods_quantity,
+			create_time,
+		    biz_code,
+		    recommend_mobile,
+		    source
+		) VALUES (
+			#{mobile, jdbcType=VARCHAR},
+			#{userId, jdbcType=VARCHAR},
+			#{openId, jdbcType=VARCHAR},
+			#{customerId, jdbcType=VARCHAR},
+			#{flag, jdbcType=INTEGER},
+			#{activityCode, jdbcType=VARCHAR},
+			#{taskCode, jdbcType=VARCHAR},
+			#{productCode, jdbcType=VARCHAR},
+			#{orderId, jdbcType=VARCHAR},
+			#{goodsCode, jdbcType=VARCHAR},
+			#{goodsQuantity, jdbcType=INTEGER},
+			#{createTime, jdbcType=TIMESTAMP},
+			#{bizCode,jdbcType=VARCHAR},
+			#{recommendMobile,jdbcType=VARCHAR},
+			#{source,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_goods_flow SET 	
+			mobile = #{mobile, jdbcType=VARCHAR},
+			user_id = #{userId, jdbcType=VARCHAR},
+			open_id = #{openId, jdbcType=VARCHAR},
+			customer_id = #{customerId, jdbcType=VARCHAR},
+			flag = #{flag, jdbcType=INTEGER},
+			activity_code = #{activityCode, jdbcType=VARCHAR},
+			task_code = #{taskCode, jdbcType=VARCHAR},
+			product_code = #{productCode, jdbcType=VARCHAR},
+			order_id = #{orderId, jdbcType=VARCHAR},
+			goods_code = #{goodsCode, jdbcType=VARCHAR},
+			goods_quantity = #{goodsQuantity},
+			used_goods_quantity = #{usedGoodsQuantity},
+			update_time = #{updateTime, jdbcType=TIMESTAMP},
+			is_deleted = #{isDeleted, jdbcType=INTEGER},
+		    biz_code = #{bizCode, jdbcType=VARCHAR},
+			recommend_mobile = #{recommendMobile, jdbcType=VARCHAR}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_goods_flow
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

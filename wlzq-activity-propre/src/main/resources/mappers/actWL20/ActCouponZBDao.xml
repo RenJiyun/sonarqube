@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.actWL20.dao.ActCouponZBDao">
+        
+        <sql id="actPrizeColumns">
+                a.id AS "id",
+                a.type AS "type",
+                a.code AS "code",
+                a.redeem_code AS "redeemCode",
+                a.card_no AS "cardNo",
+                a.card_password AS "cardPassword",
+                a.status AS "status",
+                a.create_time AS "createTime",
+                a.user_id as "userId",
+                a.open_id as "openId",
+                a.customer_id as "customerId",
+                a.activity_code AS "activityCode",
+                a.redenvelope_amt AS "redenvelopeAmt",
+                a.remark AS "remark",
+                a.update_time AS "updateTime"
+        </sql>
+   		
+   		<select id="findPrize" resultType="ActPrize">
+                SELECT 
+                        <include refid="actPrizeColumns"/>
+                        ,b.name as "name"
+                        ,b.worth as "worth"
+                        ,c.nick_name as "nickName"
+                        ,c.mobile as "mobile"
+                FROM act_prize a
+                  left join act_prize_type b on a.code = b.code
+                  left join acc_user c on a.user_id = c.user_id
+                <where>
+                		<if test="activityCode != null and activityCode != ''">
+                       		AND a.activity_code = #{activityCode}
+                		</if>
+                        <if test="userId != null and userId != ''">
+                                AND a.user_id = #{userId} 
+                        </if>
+                        <if test="customerId != null and customerId != ''">
+                                AND a.customer_id = #{customerId} 
+                        </if>
+                </where>
+        </select>
+        
+        <select id="findPrizeByUserId" resultType="ActPrize">
+                SELECT 
+                        <include refid="actPrizeColumns"/>
+                        ,b.name as "name"
+                        ,b.worth as "worth"
+                        ,c.nick_name as "nickName"
+                        ,c.mobile as "mobile"
+                FROM act_prize a
+                  left join act_prize_type b on a.code = b.code
+                  left join acc_user c on a.user_id = c.user_id
+                <where>
+                		<if test="activityCode != null and activityCode != ''">
+                       		AND a.activity_code = #{activityCode}
+                		</if>
+                        <if test="userId != null and userId != ''">
+                                AND a.user_id = #{userId} 
+                        </if>
+                        <if test="customerId != null and customerId != ''">
+                                AND a.customer_id = #{customerId} 
+                        </if>
+                </where>
+        </select>
+        
+        <select id="findPrizeTypeCode" resultType="ActPrize">
+                SELECT 
+                        <include refid="actPrizeColumns"/>
+                        ,b.name as "name"
+                        ,b.worth as "worth"
+                        ,c.nick_name as "nickName"
+                        ,c.mobile as "mobile"
+                FROM act_prize a
+                left join act_prize_type b on a.code = b.code
+                left join acc_user c on a.user_id = c.user_id
+                where a.activity_code = #{activityCode}
+                	and a.status = 1
+        </select>
+</mapper>

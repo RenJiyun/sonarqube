@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.push.dao.PushBusinessRecordDao">
+    
+	<sql id="pushBusinessRecordColumns">
+		a.id AS "id",
+		a.business_type AS "businessType",
+		a.sec_type AS "secType",
+		a.batch AS "batch",
+		a.customer_id AS "customerId",
+		a.mobile AS "mobile",
+		a.customer_name AS "customerName",
+		a.link AS "link",
+		a.content AS "content",
+		a.created_time AS "createdTime"
+	</sql>
+	
+	<sql id="pushBusinessRecordJoins">
+	</sql>
+    
+	<select id="get" resultType="PushBusinessRecord">
+		SELECT 
+			<include refid="pushBusinessRecordColumns"/>
+		FROM push_business_record a
+		<include refid="pushBusinessRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PushBusinessRecord">
+		SELECT 
+			<include refid="pushBusinessRecordColumns"/>
+		FROM push_business_record a
+		<include refid="pushBusinessRecordJoins"/>
+		<where>
+			
+			<if test="businessType != null and businessType != ''">
+				AND a.business_type = #{businessType}
+			</if>
+			<if test="secType != null and secType != ''">
+				AND a.sec_type = #{secType}
+			</if>
+			<if test="batch != null and batch != ''">
+				AND a.batch = #{batch}
+			</if>
+			<if test="customerId != null and customerId != ''">
+				AND a.customer_id = #{customerId}
+			</if>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="PushBusinessRecord">
+		SELECT 
+			<include refid="pushBusinessRecordColumns"/>
+		FROM push_business_record a
+		<include refid="pushBusinessRecordJoins"/>
+		<where>
+			
+		</where>		
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO push_business_record a (
+			a.business_type,
+			a.sec_type,
+			a.batch,
+			a.customer_id,
+			a.mobile,
+			a.customer_name,
+			a.link,
+			a.content,
+			a.created_time
+		) VALUES (
+			#{businessType, jdbcType=VARCHAR},
+			#{secType, jdbcType=VARCHAR},
+			#{batch, jdbcType=VARCHAR},
+			#{customerId, jdbcType=VARCHAR},
+			#{mobile, jdbcType=VARCHAR},
+			#{customerName, jdbcType=VARCHAR},
+			#{link, jdbcType=VARCHAR},
+			#{content, jdbcType=VARCHAR},
+			#{createdTime, jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE push_business_record a SET 	
+			a.business_type = #{businessType, jdbcType=VARCHAR},
+			a.sec_type = #{secType, jdbcType=VARCHAR},
+			a.batch = #{batch, jdbcType=VARCHAR},
+			a.customer_id = #{customerId, jdbcType=VARCHAR},
+			a.mobile = #{mobile, jdbcType=VARCHAR},
+			a.customer_name = #{customerName, jdbcType=VARCHAR},
+			a.link = #{link, jdbcType=VARCHAR},
+			a.content = #{content, jdbcType=VARCHAR},
+			a.created_time = #{createdTime, jdbcType=TIMESTAMP}
+		WHERE a.id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM push_business_record a
+		WHERE a.id = #{id}
+	</update>
+	
+</mapper>

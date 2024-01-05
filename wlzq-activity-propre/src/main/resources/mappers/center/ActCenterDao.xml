@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wlzq.activity.center.dao.ActCenterDao">
+
+    <resultMap type="com.wlzq.activity.center.model.ActCenter" id="centerMap">
+        <result property="id" column="ID"/>
+        <result property="position" column="POSITIONS"/>
+        <result property="title" column="TITLE"/>
+        <result property="summary" column="SUMMARY"/>
+        <result property="image" column="IMAGE"/>
+        <result property="sort" column="SORT"/>
+        <result property="isTop" column="IS_TOP"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="topTime" column="TOP_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="isDeleted" column="IS_DELETED"/>
+        <result property="remark" column="REMARK"/>
+        <result property="platform" column="PLATFORM"/>
+        <result property="startTime" column="START_TIME"/>
+        <result property="endTime" column="END_TIME"/>
+        <result property="routeUrl" column="ROUTE_URL"/>
+        <result property="visibility" column="VISIBILITY"/>
+        <result property="activityCode" column="ACTIVITY_CODE"/>
+        <result property="display" column="DISPLAY"/>
+    </resultMap>
+
+    <sql id="base_columns">
+        POSITIONS, TITLE, SUMMARY, IMAGE, SORT, IS_TOP, REMARK, PLATFORM, START_TIME, END_TIME, ROUTE_URL,
+        VISIBILITY, ACTIVITY_CODE
+    </sql>
+
+    <!--自研活动的时间需要查活动表-->
+    <sql id="owns_activity_columns">
+        a.ID, a.POSITIONS, a.TITLE, a.SUMMARY, a.IMAGE, a.SORT, a.IS_TOP, a.REMARK, a.PLATFORM, a.ROUTE_URL,
+        a.VISIBILITY, a.ACTIVITY_CODE, c.DATE_FROM as START_TIME, c.DATE_TO as END_TIME
+    </sql>
+
+    <!--其它活动-->
+    <sql id="others_activity_columns">
+        a.ID, a.POSITIONS, a.TITLE, a.SUMMARY, a.IMAGE, a.SORT, a.IS_TOP, a.REMARK, a.PLATFORM, a.ROUTE_URL,
+        a.VISIBILITY, a.ACTIVITY_CODE, a.START_TIME, a.END_TIME
+    </sql>
+
+    <select id="getActlist" resultMap="centerMap">
+        SELECT
+        <include refid="base_columns"/>
+        FROM (
+            SELECT
+            <include refid="owns_activity_columns"/>
+            FROM act_center a
+            LEFT JOIN act_activity c ON a.ACTIVITY_CODE = c.CODE
+            <where>
+                a.IS_DELETED = 0
+                AND a.PLATFORM = 1
+                AND TRUNC(SYSDATE) <![CDATA[ <= ]]> TRUNC(c.DATE_TO + #{days})
+            </where>
+
+            UNION ALL
+
+            SELECT
+            <include refid="others_activity_columns"/>
+            FROM act_center a
+            <where>
+                a.IS_DELETED = 0
+                AND a.PLATFORM = 2
+                AND TRUNC(SYSDATE) <![CDATA[ <= ]]> TRUNC(a.END_TIME + #{days})
+            </where>
+        )
+        <where>
+            VISIBILITY IN
+            <foreach collection="visibility" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+        ORDER BY SORT ASC NULLS LAST, ID DESC
+    </select>
+
+</mapper>

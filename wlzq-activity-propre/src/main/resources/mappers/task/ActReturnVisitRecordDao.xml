@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.task.dao.ActReturnVisitRecordDao">
+
+    <resultMap type="com.wlzq.activity.task.model.ActReturnVisitRecord" id="actReturnVisitRecordMap">
+        <result property="finishTime" column="finishTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="findByCustomerIdAndTaskNo" resultMap="actReturnVisitRecordMap">
+        SELECT
+            a.RV_TASK_NO AS "rvTaskNo",
+            a.CUSTOMER_ID AS "customerId",
+            a.FINISH_TIME AS "finishTime",
+            a.RECORD_STATUS AS "recordStatus"
+        FROM
+            RETURNVISIT_RECORD a
+        WHERE
+            a.RV_TASK_NO = #{rvTaskNo}
+          AND a.CUSTOMER_ID = #{customerId}
+        ORDER BY
+            a.ID DESC
+    </select>
+</mapper>

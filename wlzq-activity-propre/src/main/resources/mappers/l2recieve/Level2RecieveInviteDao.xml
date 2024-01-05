@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.l2recieve.dao.Level2RecieveInviteDao">
+   <resultMap id="recieveInvite" type="com.wlzq.activity.l2recieve.model.Level2RecieveInvite">
+	  <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+   </resultMap>
+	<sql id="level2RecieveInviteColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.user_mobile AS "userMobile",
+		a.invite_mobile AS "inviteMobile",
+		a.create_time AS "createTime",
+		a.status AS "status",
+		a.remark AS "remark"
+	</sql>
+	
+	<sql id="level2RecieveInviteJoins">
+	</sql>
+    
+	<select id="get" resultMap="recieveInvite">
+		SELECT 
+			<include refid="level2RecieveInviteColumns"/>
+		FROM act_level2_recieve_invite a
+		<include refid="level2RecieveInviteJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="recieveInvite">
+		SELECT 
+			<include refid="level2RecieveInviteColumns"/>
+		FROM act_level2_recieve_invite a
+		<include refid="level2RecieveInviteJoins"/>
+		<where>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="userMobile != null and userMobile != ''">
+				AND a.user_mobile = #{userMobile}
+			</if>
+			<if test="inviteMobile != null and inviteMobile != ''">
+				AND a.invite_mobile = #{inviteMobile}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="createTimeBegin != null and createTimeEnd != null">
+				AND a.create_time BETWEEN #{createTimeBegin} AND #{createTimeEnd}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findNotOpen" resultMap="recieveInvite">
+		select *
+		  from (select row_.*, rownum rownum_
+		          from (
+				SELECT 
+					<include refid="level2RecieveInviteColumns"/>
+				FROM act_level2_recieve_invite a
+				<include refid="level2RecieveInviteJoins"/>
+				where
+					a.status = 1
+					<if test="inviteMobile != null and inviteMobile != ''">
+						AND a.invite_mobile = #{inviteMobile}
+					</if>
+					order by a.id
+					) row_
+		         WHERE <![CDATA[ rownum <= #{end} ]]>
+		        ) 
+		 WHERE rownum_ > #{start}
+	</select>
+	
+	<select id="findAllList" resultMap="recieveInvite">
+		SELECT 
+			<include refid="level2RecieveInviteColumns"/>
+		FROM act_level2_recieve_invite a
+		<include refid="level2RecieveInviteJoins"/>
+		<where>
+			
+		</where>	
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_level2_recieve_invite(
+			user_id,
+			user_mobile,
+			invite_mobile,
+			status,
+			create_time,
+			remark
+		) VALUES (
+			#{userId, jdbcType=VARCHAR},
+			#{userMobile, jdbcType=VARCHAR},
+			#{inviteMobile, jdbcType=VARCHAR},
+			#{status, jdbcType=INTEGER},
+			#{createTime, jdbcType=TIMESTAMP},
+			#{remark, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_level2_recieve_invite SET 	
+			user_id = #{userId, jdbcType=VARCHAR},
+			user_mobile = #{userMobile, jdbcType=VARCHAR},
+			status = #{status, jdbcType=INTEGER},
+			invite_mobile = #{inviteMobile, jdbcType=VARCHAR},
+			remark = #{remark, jdbcType=VARCHAR}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_level2_recieve_invite
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

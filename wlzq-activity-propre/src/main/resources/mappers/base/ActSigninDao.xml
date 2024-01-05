@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.base.dao.ActSigninDao">
+    
+	<sql id="actSigninColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.act_code AS "actCode",
+		a.signin_time AS "signinTime",
+		a.status AS "status",
+		a.signin_code AS "signInCode"
+	</sql>
+	
+	<select id="get" resultType="ActSignin">
+		SELECT 
+			<include refid="actSigninColumns"/>
+		FROM act_signin a
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActSignin">
+		SELECT 
+			<include refid="actSigninColumns"/>
+		FROM act_signin a
+		<where>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="actCode != null and actCode != ''">
+				AND a.act_code = #{actCode}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="signInCode != null and signInCode != ''">
+				AND a.signin_code = #{signInCode}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="ActSignin">
+		SELECT 
+			<include refid="actSigninColumns"/>
+		FROM act_signin a
+		<where>
+			
+		</where>		
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_signin(
+			user_id,
+			act_code,
+			signin_time,
+			status,
+			signin_code
+		) VALUES (
+			#{userId},
+			#{actCode},
+			#{signinTime},
+			#{status},
+			#{signInCode, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_signin SET 	
+			user_id = #{userId},
+			act_code = #{actCode},
+			signin_time = #{signinTime},
+			status = #{status},
+			signin_code = #{signInCode}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findWechatInfoList" resultType="ActSignin">
+		SELECT 
+			<include refid="actSigninColumns"/>
+			,b.nick_name AS "nickName"
+			,b.portrait AS "headImageUrl"
+		FROM act_signin a
+		LEFT JOIN acc_user b ON a.user_id = b.user_id
+		
+		<where>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="actCode != null and actCode != ''">
+				AND a.act_code = #{actCode}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="signInCode != null and signInCode != ''">
+				AND a.signin_code = #{signInCode}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findValidSignInList" resultType="ActSignin">
+		SELECT *
+      	FROM (SELECT row_.*, rownum rownum_
+           	FROM (SELECT 
+					a.id AS "id",
+					a.user_id AS "userId",
+					a.act_code AS "actCode",
+					a.signin_time AS "signinTime",
+					a.status AS "status",
+					CASE WHEN a.signin_code IS NULL THEN to_char(a.id) ELSE a.signin_code END AS "signInCode",
+					b.nick_name AS "nickName",
+					b.portrait AS "headImageUrl"
+				FROM act_signin a
+				LEFT JOIN acc_user b ON a.user_id = b.user_id
+				<where>
+					AND a.status = 1
+				</where>
+				ORDER BY a.id) row_
+			WHERE  <![CDATA[ rownum <= #{end} ]]>) 
+		 WHERE rownum_ > #{start}
+	</select>
+	
+	<select id="findSigninListCodeNotNull" resultType="ActSignin">
+		SELECT * FROM (
+			SELECT 
+				<include refid="actSigninColumns"/>
+				,b.nick_name AS "nickName"
+				,b.portrait AS "headImageUrl"
+			FROM act_signin a
+			LEFT JOIN acc_user b ON a.user_id = b.user_id
+			<where>
+			    1=1
+				AND a.signin_code IS NOT NULL
+				AND a.status = 1
+				<if test="actCode != null and actCode != ''">
+					AND a.act_code = #{actCode}
+				</if>
+				AND (b.is_deleted IS NULL OR (b.is_deleted IS NOT NULL AND b.is_deleted = 0))
+				<if test="maxOrder != null and maxOrder != ''">
+					AND a.signin_code > #{maxOrder}
+				</if>
+			</where>
+			ORDER BY a.signin_time,a.signin_code,a.id) t 
+		<if test="maxLength != null and maxLength != ''">
+			WHERE rownum <![CDATA[ <= ]]> #{maxLength}
+		</if>
+	</select>
+	
+	<select id="findMinId" resultType="java.lang.Integer">
+		SELECT MIN(id) 
+		FROM act_signin a
+		<where>
+			<if test="actCode != null and actCode != ''">
+				AND a.act_code = #{actCode}
+			</if>
+		</where>
+    </select>
+    
+    <update id="updateInvalid">
+		UPDATE act_signin SET 	
+			status = 0
+		WHERE act_code = #{actCode}
+	</update>
+	
+	<update id="deleteByActCode">
+  		update act_signin a set a.status = 0 where a.act_code = #{actCode}
+	</update>
+		
+</mapper>

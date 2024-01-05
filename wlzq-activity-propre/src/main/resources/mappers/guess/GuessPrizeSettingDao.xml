@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.guess.dao.GuesssPrizeSettingDao">
+    
+	<sql id="guessPrizeSettingColumns">
+		a.id AS "id",
+		a.activity_code AS "activityCode",
+		a.win_count AS "winCount",
+		a.prize_code AS "prizeCode",
+		a.create_time AS "createTime",
+		a.remark AS "remark"
+	</sql>
+	
+	<sql id="guessPrizeSettingJoins">
+	</sql>
+    
+	<select id="get" resultType="GuesssPrizeSetting">
+		SELECT 
+			<include refid="guessPrizeSettingColumns"/>
+		FROM act_guess_prize_setting a
+		<include refid="guessPrizeSettingJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findByWinCount" resultType="GuesssPrizeSetting">
+		SELECT 
+			<include refid="guessPrizeSettingColumns"/>
+		FROM act_guess_prize_setting a
+		<include refid="guessPrizeSettingJoins"/>
+		WHERE a.win_count = #{winCount} AND a.activity_code = #{activityCode} 
+		   and rownum = 1
+	</select>
+	
+	<select id="findList" resultType="GuesssPrizeSetting">
+		SELECT 
+			<include refid="guessPrizeSettingColumns"/>
+		FROM act_guess_prize_setting a
+		<include refid="guessPrizeSettingJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GuesssPrizeSetting">
+		SELECT 
+			<include refid="guessPrizeSettingColumns"/>
+		FROM act_guess_prize_setting a
+		<include refid="guessPrizeSettingJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

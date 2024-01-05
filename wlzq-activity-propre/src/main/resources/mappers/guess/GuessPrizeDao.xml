@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.guess.dao.GuesssPrizeDao">
+    <resultMap id="userPrize" type="com.wlzq.activity.base.dto.UserPrizeDto">
+	  <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+   </resultMap>
+   
+	<sql id="guessPrizeColumns">
+		a.id AS "id",
+		a.activity_code AS "activityCode",
+		a.user_id AS "userId",
+		a.redeem_code AS "redeemCode",
+		a.card_no AS "cardNo",
+		a.card_password AS "cardPassword",
+		a.create_time AS "createTime",
+		a.type AS "type"
+	</sql>
+	
+	<sql id="guessPrizeJoins">
+	</sql>
+    
+	<select id="get" resultType="GuesssPrize">
+		SELECT 
+			<include refid="guessPrizeColumns"/>
+		FROM act_guess_prize a
+		<include refid="guessPrizeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findNotPopup" resultType="GuesssPrizeDto">
+		select 
+			   a.id as "id",
+		       w.win_count as "winCount",
+		       p.name      as "prizeName"
+		  from act_guess_prize a
+		  left join act_guess_win w
+		    on a.win_id = w.id
+		  left join act_prize_type p
+		    on a.prize_code = p.code
+		   where 
+		     a.user_id = #{userId} AND a.activity_code = #{activityCode}
+		    and a.has_popup = 0
+		    and rownum = 1
+	</select>
+	
+	<select id="findByRedeem" resultType="GuesssPrize">
+		SELECT 
+			<include refid="guessPrizeColumns"/>
+		FROM act_guess_prize a
+		<include refid="guessPrizeJoins"/>
+		WHERE a.redeem_code = #{redeemCode}
+		and rownum = 1
+	</select>
+	
+	<select id="findPrizes" resultType="GuesssPrizeDto">
+		select *
+		  from (select row_.*, rownum rownum_
+		          from (
+						select NVL(u.nick_name,REPLACE(u.mobile, substr(u.mobile,4,4), '****')) as "nickName",
+						       a.win_count as "winCount",
+						       p.name      as "prizeName"
+						  from act_guess_prize a
+						  left join act_prize_type p
+						    on a.prize_code = p.code
+						  left join acc_user u
+						    on a.user_id = u.user_id
+						  where a.activity_code = #{activityCode}
+						 order by a.id desc
+				    	) row_
+			         WHERE <![CDATA[ rownum <= #{end} ]]>
+	        ) 
+		 WHERE rownum_ > #{start}
+	</select>
+	
+	<select id="findUserPrizes" resultMap="userPrize">
+		select *
+		  from (select row_.*, rownum rownum_
+		          from (
+						select t.type as "type",
+					       t.time as "time",
+					       t.worth as "worth",
+					       p.redeem_code as "redeemCode",
+					       p.card_no as "cardNo",
+					       p.card_password as "cardPassword",
+					       p.status as "status",
+					       a.create_time as "createTime"
+					  from act_guess_prize a
+					  left join act_guess_win w
+					    on a.win_id = w.id
+					  left join act_prize_type t
+					    on a.prize_code = t.code
+					  left join act_prize p
+					    on a.prize_id = p.id
+					    where a.user_id = #{userId} AND a.activity_code = #{activityCode}
+					 order by a.id desc
+				) row_
+			         WHERE <![CDATA[ rownum <= #{end} ]]>
+	        ) 
+		 WHERE rownum_ > #{start}
+	</select>
+	
+	<select id="findNotUseCount" resultType="java.lang.Integer">
+		select count(a.id)
+		  from act_guess_prize a
+		  left join act_prize p
+		    on a.prize_id = p.id
+		 where a.user_id = #{userId}
+		   and a.type = 1
+		   and p.status = 2
+		   AND a.activity_code = #{activityCode}
+	</select>
+	
+	<select id="findList" resultType="GuesssPrize">
+		SELECT 
+			<include refid="guessPrizeColumns"/>
+		FROM act_guess_prize a
+		<include refid="guessPrizeJoins"/>
+		<where>
+			
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GuesssPrize">
+		SELECT 
+			<include refid="guessPrizeColumns"/>
+		FROM act_guess_prize a
+		<include refid="guessPrizeJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO act_guess_prize(
+			activity_code,
+			user_id,
+			win_id,
+			prize_id,
+			prize_code,
+			redeem_code,
+			card_no,
+			card_password,
+			create_time,
+			type,
+			win_count
+		) VALUES (
+			#{activityCode},
+			#{userId},
+			#{winId},
+			#{prizeId},
+			#{prizeCode},
+			#{redeemCode,jdbcType=VARCHAR},
+			#{cardNo,jdbcType=VARCHAR},
+			#{cardPassword,jdbcType=VARCHAR},
+			#{createTime},
+			#{type},
+			#{winCount,jdbcType=INTEGER}
+		)
+	</insert>
+	
+	
+	<update id="update">
+		UPDATE act_guess_prize SET 
+			has_popup = #{hasPopup}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

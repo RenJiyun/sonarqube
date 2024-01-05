@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.redeem.dao.RedeemDao">
+    <resultMap id="redeem" type="com.wlzq.activity.redeem.model.Redeem">
+	  <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+	  <result property="outTime" column="outTime" jdbcType="TIMESTAMP"/>
+	  <result property="takeTime" column="takeTime" jdbcType="TIMESTAMP"/>
+	  <result property="validityDateFrom" column="validityDateFrom" jdbcType="TIMESTAMP"/>
+	  <result property="validityDateTo" column="validityDateTo" jdbcType="TIMESTAMP"/>
+  </resultMap>
+  
+	<sql id="redeemColumns">
+		a.id AS "id",
+		a.code AS "code",
+		a.open_id AS "openId",
+		a.status AS "status",
+		a.type_code AS "typeCode",
+		a.activity_code AS "activityCode",
+		a.goods_id AS "goodsId",
+		a.user_id AS "userId",
+		a.mobile AS "mobile",
+		a.order_no AS "orderNo",
+		a.notity_status AS "notityStatus",
+		a.create_time AS "createTime",
+		a.out_time AS "outTime",
+		a.take_time AS "takeTime",
+		a.recommend_mobile AS "recommendMobile",
+  		a.recommend_name as recommendName,
+  		a.recommend_office_name as recommendOfficeName,
+  		a.recommend_office_id as recommendOfficeId
+	</sql>
+	
+	<sql id="redeemJoins">
+		left join act_redeem_type t on a.type_code=t.code
+    	LEFT JOIN ACT_ACTIVITY_GOODS b
+	    	ON a.activity_code = b.activity_code
+    	AND a.goods_id = b.goods_id
+	</sql>
+    <sql id="joinColumns">
+		,t.validity_type AS "validityType"
+		,t.validity_date_from AS "validityDateFrom"
+		,t.validity_date_to AS "validityDateTo"
+		,t.validity_day AS "validityDay"
+		, b.goods_name as goodsName
+	    , b.goods_time as goodsTime
+	    , b.time_type as timeType
+	</sql>
+	
+	<select id="get" resultMap="redeem">
+		SELECT 
+			<include refid="redeemColumns"/>
+		FROM act_redeem a
+		<include refid="redeemJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findNotOccupy" resultMap="redeem">
+		SELECT 
+			<include refid="redeemColumns"/>
+			<include refid="joinColumns"/>
+		FROM act_redeem a
+		<include refid="redeemJoins"/>
+		WHERE
+		 a.type_code = #{typeCode}
+		 and a.status = 0
+		<![CDATA[ and rownum<2 ]]>
+	</select>
+	
+	<select id="findByCode" resultMap="redeem">
+		SELECT 
+			<include refid="redeemColumns"/>
+			<include refid="joinColumns"/>
+		FROM act_redeem a
+		<include refid="redeemJoins"/>
+		WHERE
+		 a.code = #{code}
+		<![CDATA[ and rownum<2 ]]>
+	</select>
+	
+	<select id="findByMobile" resultMap="redeem">
+		SELECT 
+			<include refid="redeemColumns"/>
+			<include refid="joinColumns"/>
+		FROM act_redeem a
+		<include refid="redeemJoins"/>
+		WHERE
+		 a.mobile = #{mobile}
+		and a.activity_code = #{activityCode}
+		<![CDATA[ and rownum<2 ]]>
+	</select>
+	
+	<select id="findList" resultMap="redeem">
+		SELECT 
+			<include refid="redeemColumns"/>
+			<include refid="joinColumns"/>
+		FROM act_redeem a
+		<include refid="redeemJoins"/>
+		<where>
+			<if test="code != null and code != ''">
+				AND a.code = #{code}
+			</if>
+			<if test="openId != null and openId != ''">
+				AND a.open_id = #{openId}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="typeCode != null and typeCode != ''">
+				AND a.type_code = #{typeCode}
+			</if>
+			<if test="activityCode != null and activityCode != ''">
+				AND a.activity_code = #{activityCode}
+			</if>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+			<if test="orderNo != null and orderNo != ''">
+				AND a.order_no = #{orderNo}
+			</if>
+			<if test="notityStatus != null and notityStatus != ''">
+				AND a.notity_status = #{notityStatus}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultMap="redeem">
+		SELECT 
+			<include refid="redeemColumns"/>
+		FROM act_redeem a
+		<include refid="redeemJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO act_redeem(
+			code,
+			type_code,
+			activity_code,
+			goods_id,
+			mobile,
+			order_no,
+			notity_status,
+			notity_message,
+			create_time,
+			out_time,
+			take_time,
+			recommend_mobile,
+			recommend_name,
+			recommend_office_name,
+			recommend_office_id,
+			is_batch_open,
+			is_deleted,
+			remark,
+			user_id,
+			open_id
+		) VALUES (
+			#{code},
+			#{typeCode},
+			#{activityCode},
+			#{goodsId},
+			#{mobile},
+			#{orderNo},
+			#{notityStatus},
+			#{notityMessage},
+			#{createTime},
+			#{outTime},
+			#{takeTime},
+			#{recommendMobile},
+			#{recommendName},
+			#{recommendOfficeName},
+			#{recommendOfficeId},
+			#{isBatchOpen},
+			#{isDeleted},
+			#{remark},
+			#{userId},
+			#{openId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_redeem a
+		<set>              
+	  		
+	  		<if test="orderNo != null">
+		  		a.ORDER_NO = #{orderNo},
+		  	</if>
+	  		<if test="notityStatus != null">
+		  		a.NOTITY_STATUS = #{notityStatus},
+		  	</if>
+	  		<if test="notityMessage != null">
+		  		a.NOTITY_MESSAGE = #{notityMessage},
+		  	</if>
+	  		<if test="mobile != null">
+		  		a.MOBILE = #{mobile},
+		  	</if>
+	  		<if test="outTime != null">
+		  		a.OUT_TIME = #{outTime, jdbcType=TIMESTAMP},
+		  	</if>
+		  	<if test="status != null">
+		  		a.status = #{status},
+		  	</if>
+	  		<if test="takeTime != null">
+		  		a.TAKE_TIME = #{takeTime, jdbcType=TIMESTAMP},
+		  	</if>
+	  		<if test="userId != null">
+		  		a.user_id = #{userId},
+		  	</if>
+	  		<if test="openId != null">
+		  		a.open_id = #{openId},
+		  	</if>
+	  		<if test="recommendMobile != null">
+		  		a.recommend_mobile = #{recommendMobile},
+		  	</if>
+	  		<if test="recommendName != null">
+		  		a.recommend_name = #{recommendName},
+		  	</if>
+	  		<if test="recommendOfficeName != null">
+		  		a.recommend_office_name = #{recommendOfficeName},
+		  	</if>
+	  		<if test="recommendOfficeId != null">
+		  		a.recommend_office_id = #{recommendOfficeId},
+		  	</if>
+    </set>
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_redeem
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deleteBatch">
+		DELETE FROM act_redeem
+		WHERE
+		 type_code = #{typeCode}
+		 and activity_code = #{activityCode}
+	</update>
+</mapper>

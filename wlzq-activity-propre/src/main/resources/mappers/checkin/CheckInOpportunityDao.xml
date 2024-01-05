@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.checkin.dao.CheckInOpportunityDao">
+    
+	<sql id="checkInOpportunityColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.openid AS "openid",
+		a.status AS "status",
+		a.create_time AS "createTime",
+		a.use_time AS "useTime",
+		a.remark AS "remark"
+	</sql>
+	
+	<sql id="checkInOpportunityJoins">
+	</sql>
+    
+	<select id="get" resultType="CheckInOpportunity">
+		SELECT 
+			<include refid="checkInOpportunityColumns"/>
+		FROM act_check_in_opportunity a
+		<include refid="checkInOpportunityJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CheckInOpportunity">
+		SELECT 
+			<include refid="checkInOpportunityColumns"/>
+		FROM act_check_in_opportunity a
+		<include refid="checkInOpportunityJoins"/>
+		<where>
+			
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="findOpportunities" resultType="CheckInOpportunity">
+		SELECT 
+			<include refid="checkInOpportunityColumns"/>
+		FROM act_check_in_opportunity a
+		<include refid="checkInOpportunityJoins"/>
+		<where>
+			a.status = 0
+			<if test="openid != null and openid != ''">
+				AND a.openid = #{openid}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findByTime" resultType="CheckInOpportunity">
+		SELECT 
+			<include refid="checkInOpportunityColumns"/>
+		FROM act_check_in_opportunity a
+		<include refid="checkInOpportunityJoins"/>
+		<where>
+			<if test="openid != null and openid != ''">
+				AND a.openid = #{openid}
+			</if>
+			<if test="status != null">
+				AND a.status >= #{status}
+			</if>
+			<if test="timeStart != null">
+				AND a.create_time >= #{timeStart}
+			</if>
+			<if test="timeEnd != null">
+				<![CDATA[AND a.create_time <= #{timeEnd}]]>
+			</if>
+		</where>
+	</select>
+	
+	
+	<select id="findAllList" resultType="CheckInOpportunity">
+		SELECT 
+			<include refid="checkInOpportunityColumns"/>
+		FROM act_check_in_opportunity a
+		<include refid="checkInOpportunityJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_check_in_opportunity(
+			user_id,
+			openid,
+			status,
+			create_time,
+			remark
+		) VALUES (
+			#{userId},
+			#{openid},
+			#{status},
+			#{createTime},
+			#{remark, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_check_in_opportunity SET 
+			status = #{status},
+			use_time = #{useTime, jdbcType=TIMESTAMP},
+			remark = #{remark, jdbcType=VARCHAR}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_check_in_opportunity
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

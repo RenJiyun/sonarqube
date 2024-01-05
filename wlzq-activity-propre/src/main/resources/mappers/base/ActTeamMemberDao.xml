@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wlzq.activity.base.dao.ActTeamMemberDao" >
+
+  	<resultMap id="actTeamMap" type="com.wlzq.activity.base.model.ActTeamMember">
+	  <result property="teamSerial" column="teamSerial" jdbcType="VARCHAR"/>
+	  <result property="userId" column="userId" jdbcType="VARCHAR"/>  	  
+	  <result property="customerId" column="customerId" jdbcType="VARCHAR"/> 
+	  <result property="type" column="type" jdbcType="INTEGER"/>
+	  <result property="nickName" column="nickName" jdbcType="VARCHAR"/>
+	  <result property="portrait" column="portrait" jdbcType="VARCHAR"/>
+	  <result property="userName" column="userName" jdbcType="VARCHAR"/>  	  
+	  <result property="openId" column="openId" jdbcType="VARCHAR"/>  	  
+	  <result property="createDate" column="createDate" jdbcType="TIMESTAMP"/>  
+	</resultMap>
+	
+  <!-- 查询的列  start  -->
+  <sql id="teamMember_columns" >
+  		a.id as id,
+  		a.team_serial as teamSerial,
+  		a.user_id as userId,
+  		a.customer_id as customerId,
+  		a.type as type,
+  		a.create_date as createDate,
+  		a.open_id as openId
+  </sql>
+  
+  <sql id="name_columns">
+  		,b.nick_name as nickName,
+  		b.portrait as portrait, 
+  		c.user_name	as userName
+  </sql>
+
+  <sql id="actTeamMemberJoins">
+  		LEFT JOIN acc_user b ON a.user_id = b.user_id
+  		LEFT JOIN acc_customer c ON a.customer_id = c.customer_id
+  </sql>
+  
+  <!-- 查询的列  end  -->
+  
+  <!-- 返回条数  start  -->
+  <sql id = "rownum">
+  	<if test="rownum != null and rownum >= 0">
+  		rownum <![CDATA[<=]]> #{rownum}
+  	</if>
+  </sql>
+  <!-- 返回条数  end  -->
+  
+  
+  <!-- 实体通用方法  start  -->
+		<select id="findByTeamSerial" resultMap="actTeamMap">
+			SELECT 
+				<include refid="teamMember_columns"></include>
+				<include refid="name_columns"></include>
+			FROM act_team_member a
+				<include refid="actTeamMemberJoins"></include>
+			<where>
+				<if test="teamSerial != null and teamSerial != '' ">
+	  				and a.team_serial = #{teamSerial}
+	  			</if>
+	  			<if test="customerId != null and customerId != ''">
+	  				and (a.customer_id is null or a.customer_id != #{customerId})
+	  			</if>
+			</where>
+			ORDER BY a.create_date asc
+		</select>
+		
+		<select id="findAutoList" resultMap="actTeamMap">
+			SELECT 
+				<include refid="teamMember_columns"></include>
+			FROM act_team_member SAMPLE(20) a
+			WHERE
+				    a.team_serial not in
+					<foreach collection="actTeamList" item="actTeam" open="(" close=")" separator=",">
+						#{actTeam.teamSerial}
+					</foreach>
+				<if test="rownum != null and rownum >= 0">
+			  		AND　　rownum <![CDATA[<=]]> #{rownum}
+			  	</if>
+		</select>
+		
+		<select id="findByTemplateAndOpenId" resultMap="actTeamMap">
+			SELECT 
+				<include refid="teamMember_columns"></include>
+			FROM act_team_member a
+			LEFT JOIN act_team b ON a.team_serial = b.team_serial
+			<where>
+				<if test="template != null and template != '' ">
+	  				and b.template = #{template}
+	  			</if>
+	  			<if test="openId != null and openId != ''">
+	  				and a.open_id = #{openId}
+	  			</if>
+	  			AND (b.create_customerid != a.customer_id or a.customer_id is null)
+			</where>
+		</select>
+		
+  <!-- 实体通用方法  end  -->
+  
+  <!-- 修改 start -->
+  
+  <!-- 修改 end -->
+
+  <!-- 新增 start -->
+        <insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+                INSERT INTO act_team_member(
+                        team_serial,
+                        user_id,
+                        customer_id,
+                        type,
+                        create_date,
+                        open_id
+                ) VALUES (
+                        #{teamSerial, jdbcType=VARCHAR},
+                        #{userId, jdbcType=VARCHAR},
+                        #{customerId, jdbcType=VARCHAR},
+                        #{type, jdbcType=INTEGER},
+                        #{createDate, jdbcType=TIMESTAMP},
+                        #{openId, jdbcType=INTEGER}
+                )
+        </insert>
+  <!-- 新增 end -->
+
+  <!-- 删除 start -->
+  	<delete id="deleteByTeamSerial">
+		DELETE FROM act_team_member
+		WHERE team_serial = #{teamSerial}
+  	</delete>
+  <!-- 删除 end -->
+  
+</mapper>

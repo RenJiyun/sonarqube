@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.task.dao.ActNoActBankTransferDao">
+
+    <resultMap type="com.wlzq.activity.task.model.ActNoActBankTransfer" id="actNoActBankTransferMap">
+    </resultMap>
+
+    <sql id="actNoActBankTransferColumns">
+        a.INIT_DATE AS "initDate",
+        a.CLIENT_ID AS "clientId",
+        a.OCCUR_BALANCE AS "occurBalance"
+    </sql>
+
+    <select id="findList" resultMap="actNoActBankTransferMap">
+        SELECT
+        <include refid="actNoActBankTransferColumns"/>
+        FROM ACT_NO_ACT_BANKTRANSFER a
+        <where>
+        <if test="initDate != null and initDate != ''">
+            a.INIT_DATE = #{initDate}
+        </if>
+        <if test="clientId != null and clientId != ''">
+            AND a.CLIENT_ID = #{clientId}
+        </if>
+        and OCCUR_BALANCE >= 10000 and MONEY_TYPE = '0'
+        </where>
+    </select>
+    <select id="queryByDate" resultType="com.wlzq.activity.task.model.ActNoActBankTransfer">
+        SELECT
+        <include refid="actNoActBankTransferColumns"/>
+        FROM ACT_NO_ACT_BANKTRANSFER a
+        <where>
+            a.INIT_DATE > #{lastHandleDate} and a.INIT_DATE <![CDATA[= #{lastSyncDate}
+        ]]></where>
+    </select>
+</mapper>

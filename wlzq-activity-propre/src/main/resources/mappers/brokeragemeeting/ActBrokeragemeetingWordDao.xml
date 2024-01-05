@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.brokeragemeeting.dao.ActBrokeragemeetingWordDao">
+    
+	<sql id="actBrokeragemeetingWordColumns">
+		a.id AS "id",
+		a.word AS "word",
+		a.status AS "status"
+	</sql>
+	
+	<sql id="actBrokeragemeetingWordJoins">
+	</sql>
+    
+	<select id="get" resultType="ActBrokeragemeetingWord">
+		SELECT 
+			<include refid="actBrokeragemeetingWordColumns"/>
+		FROM act_brokeragemeeting_word a
+		<include refid="actBrokeragemeetingWordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActBrokeragemeetingWord">
+		SELECT 
+			<include refid="actBrokeragemeetingWordColumns"/>
+		FROM act_brokeragemeeting_word a
+		<include refid="actBrokeragemeetingWordJoins"/>
+		<where>
+			
+			<if test="word != null and word != ''">
+				AND a.word = #{word}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		ORDER BY a.id
+	</select>
+	
+	<select id="findAllList" resultType="ActBrokeragemeetingWord">
+		SELECT 
+			<include refid="actBrokeragemeetingWordColumns"/>
+		FROM act_brokeragemeeting_word a
+		<include refid="actBrokeragemeetingWordJoins"/>
+		<where>
+			
+		</where>		
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_brokeragemeeting_word(
+			word,
+			status
+		) VALUES (
+			#{word, jdbcType=VARCHAR},
+			#{status, jdbcType=INTEGER}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_brokeragemeeting_word SET 	
+			word = #{word, jdbcType=VARCHAR},
+			status = #{status, jdbcType=INTEGER}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_brokeragemeeting_word
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

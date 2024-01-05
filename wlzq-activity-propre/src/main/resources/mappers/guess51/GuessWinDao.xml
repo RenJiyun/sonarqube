@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.guess51.dao.GuessWinDao">
+    
+	<sql id="guessWinColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.win_count AS "winCount",
+		a.win_from_date AS "winFromDate",
+		a.win_to_date AS "winToDate",
+		a.win_dates AS "winDates",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.remark AS "remark"
+	</sql>
+	
+	<sql id="guessWinJoins">
+	</sql>
+    
+	<select id="get" resultType="GuessWin">
+		SELECT 
+			<include refid="guessWinColumns"/>
+		FROM act_guess_win_51 a
+		<include refid="guessWinJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findLastWin" resultType="GuessWin">
+		select * from (
+		SELECT 
+			<include refid="guessWinColumns"/>
+		FROM act_guess_win_51 a
+		<include refid="guessWinJoins"/>
+		WHERE a.user_id = #{userId}
+		 order by a.win_to_date desc
+		) where rownum=1
+	</select>
+	
+	<select id="findList" resultType="GuessWin">
+		SELECT 
+			<include refid="guessWinColumns"/>
+		FROM act_guess_win_51 a
+		<include refid="guessWinJoins"/>
+		<where>
+			
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="winCount != null and winCount != ''">
+				AND a.win_count = #{winCount}
+			</if>
+			<if test="winFromDate != null and winFromDate != ''">
+				AND a.win_from_date = #{winFromDate}
+			</if>
+			<if test="winToDate != null and winToDate != ''">
+				AND a.win_to_date = #{winToDate}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="GuessWin">
+		SELECT 
+			<include refid="guessWinColumns"/>
+		FROM act_guess_win_51 a
+		<include refid="guessWinJoins"/>
+		<where>
+			
+		</where>
+	</select>
+	
+	
+	<select id="rankingList" resultType="WinRankDto">
+		select *
+		  from (select row_.*, rownum as "order"
+		          from (select *
+		                  from (select nvl(au.nick_name,REPLACE(au.mobile, substr(au.mobile,4,4), '****')) as "nickName",
+		                               au.portrait as "portrait",
+		                               nvl(b."win_count", 0) as "winCount",
+		                               u.create_time as "registTime",
+                                       au.mobile as "mobile"
+		                          from (select a.user_id,
+		                                           max(a.win_count) as "win_count"
+		                                      from act_guess_win_51 a
+		                                    <where>
+			                                    <if test="win.winFromDate != null">
+			                                       a.win_to_date >= #{win.winFromDate}
+			                                    </if>
+			                                    <if test="win.winToDate != null">
+			                                       <![CDATA[ and a.win_to_date <= #{win.winToDate} ]]>
+			                                    </if>
+		                                    </where>
+		                                     group by a.user_id) b
+		                                     left join act_guess_user u on b.user_id = u.user_id
+		                          left join acc_user au
+		                            on b.user_id = au.user_id)
+		                 order by "winCount" desc,"registTime" asc) row_
+		         WHERE <![CDATA[ rownum <= #{end} ]]>
+		         )
+		 WHERE "order" > #{start}
+	</select>
+	
+	<select id="ranking" resultType="WinRankDto">
+		select *
+	        from (select row_.*, rownum as "order"
+	                from (select *
+	                        from (select au.nick_name as "nickName",
+	                                     au.portrait as "portrait",
+	                                     b.user_id ,
+	                                     nvl(b."win_count", 0) as "winCount",
+	                                     u.create_time as "registTime"
+	                                from (select a.user_id,
+	                                                 max(a.win_count) as "win_count"
+	                                            from act_guess_win_51 a
+	                                          
+	                                           group by a.user_id) b
+	                                           left join act_guess_user u on b.user_id = u.user_id
+	                                left join acc_user au
+	                                  on b.user_id = au.user_id)
+	                       order by "winCount" desc,"registTime" asc) row_
+	               )
+	       WHERE  user_id=#{userId}
+	</select>
+	
+	<select id="rankingCount" resultType="java.lang.Long">
+		select nvl(count(distinct(a.user_id)),0) from act_guess_win_51 a 
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_guess_win_51(
+			user_id,
+			win_count,
+			win_from_date,
+			win_to_date,
+			win_dates,
+			create_time,
+			remark
+		) VALUES (
+			#{userId},
+			#{winCount},
+			#{winFromDate},
+			#{winToDate},
+			#{winDates},
+			#{createTime},
+			#{remark,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_guess_win_51 SET 	
+			win_count = #{winCount},
+			win_from_date = #{winFromDate},
+			win_to_date = #{winToDate},
+			win_dates = #{winDates},
+			update_time = #{updateTime,jdbcType=TIMESTAMP},
+			remark = #{remark,jdbcType=VARCHAR}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_guess_win_51
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

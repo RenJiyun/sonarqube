@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.virtualfin.dao.ActFinProductDao">
+    <resultMap type="com.wlzq.activity.virtualfin.model.ActFinProduct" id="actFinProductMap">
+    	<result property="openDate" column="openDate" jdbcType="TIMESTAMP"/>
+    	<result property="closeDate" column="closeDate" jdbcType="TIMESTAMP"/>
+    </resultMap>
+        
+	<sql id="actFinProductColumns">
+		a.id AS "id",
+		a.code AS "code",
+		a.name AS "name",
+		a.activity_code AS "activityCode",
+		a.goods_code AS "goodsCode",
+		a.profit AS "profit",
+		a.min_buy AS "minBuy",
+		a.max_buy AS "maxBuy",
+		a.period AS "period",
+		a.status AS "status",
+		a.sort AS "sort",
+		a.open_date AS "openDate",
+		a.close_date AS "closeDate",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.is_deleted AS "isDeleted"
+	</sql>
+	
+	<sql id="actFinProductJoins">
+	</sql>
+    
+	<select id="get" resultType="ActFinProduct">
+		SELECT 
+			<include refid="actFinProductColumns"/>
+		FROM act_fin_product a
+		<include refid="actFinProductJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findByCode" resultMap="actFinProductMap">
+		SELECT 
+			<include refid="actFinProductColumns"/>
+		FROM act_fin_product a
+		<include refid="actFinProductJoins"/>
+		WHERE a.code = #{productCode} 
+			and a.activity_code = #{activityCode} 
+			and rownum = 1
+	</select>
+		
+	<select id="findList" resultType="com.wlzq.activity.virtualfin.model.ActFinProduct">
+		SELECT 
+			<include refid="actFinProductColumns"/>
+		FROM act_fin_product a
+		<include refid="actFinProductJoins"/>
+		<where>
+			a.status = 1
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="activityCode != null and activityCode != ''">
+				AND a.activity_code = #{activityCode}
+			</if>
+			<if test="codeList != null and codeList.size() > 0">
+				AND a.code IN 
+				<foreach collection="codeList" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="minBuy != null and minBuy != ''">
+				AND a.min_buy = #{minBuy}
+			</if>
+		</where>
+		ORDER BY a.sort asc nulls last, a.id desc
+	</select>
+	
+	<select id="findAllList" resultType="ActFinProduct">
+		SELECT 
+			<include refid="actFinProductColumns"/>
+		FROM act_fin_product a
+		<include refid="actFinProductJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_fin_product(
+			code,
+			name,
+			profit,
+			min_buy,
+			max_buy,
+			period,
+			activity_code,
+			goods_code,
+			status,
+			sort,
+			open_date,
+			close_date,
+			create_time
+		) VALUES (
+			#{code},
+			#{name},
+			#{profit},
+			#{minBuy},
+			#{maxBuy},
+			#{period},
+			#{activityCode},
+			#{goodsCode},
+			#{status},
+			#{sort},
+			#{openDate},
+			#{closeDate},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_fin_product SET 	
+			code = #{code},
+			name = #{name},
+			profit = #{profit},
+			min_buy = #{minBuy},
+			max_buy = #{maxBuy},
+			period = #{period},
+			status = #{status},
+			sort = #{sort},
+			activity_code =#{activityCode},
+			goods_code =#{goodsCode},
+			open_date = #{openDate},
+			close_date = #{closeDate},
+			update_time = #{updateTime},
+			is_deleted = #{isDeleted}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_fin_product
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

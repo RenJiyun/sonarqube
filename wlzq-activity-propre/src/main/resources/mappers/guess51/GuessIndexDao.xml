@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.guess51.dao.GuessIndexDao">
+    
+	<sql id="guessIndexColumns">
+		a.id AS "id",
+		a.open AS "open",
+		a.close AS "close",
+		a.index_date AS "indexDate",
+		a.create_time AS "createTime",
+		a.remark AS "remark"
+	</sql>
+	
+	<sql id="guessIndexJoins">
+	</sql>
+    
+	<select id="get" resultType="GuessIndex">
+		SELECT 
+			<include refid="guessIndexColumns"/>
+		FROM act_guess_index_51 a
+		<include refid="guessIndexJoins"/>
+		WHERE a.id = #{id}
+	</select>
+		
+	<select id="findIndex" resultType="GuessIndex">
+		SELECT 
+			<include refid="guessIndexColumns"/>
+		FROM act_guess_index_51 a
+		<include refid="guessIndexJoins"/>
+		WHERE a.index_date = #{indexDate}
+		and a.guess_no =  #{guessNo}
+		and a.type =  #{type}
+	</select>
+	
+	
+	<select id="findList" resultType="GuessIndex">
+		SELECT 
+			<include refid="guessIndexColumns"/>
+		FROM act_guess_index_51 a
+		<include refid="guessIndexJoins"/>
+		<where>
+			<if test="indexDate != null and indexDate != ''">
+				AND a.index_date = #{indexDate}
+			</if>
+			<if test="guessNo != null and guessNo != ''">
+				AND a.guess_no = #{guessNo}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="GuessIndex">
+		SELECT 
+			<include refid="guessIndexColumns"/>
+		FROM act_guess_index_51 a
+		<include refid="guessIndexJoins"/>
+		<where>
+			
+		</where>	
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO act_guess_index_51(
+			type,
+			open,
+			close,
+			index_date,
+			guess_no,
+			create_time,
+			remark
+		) VALUES (
+			#{type},
+			#{open},
+			#{close},
+			#{indexDate},
+			#{guessNo},
+			#{createTime},
+			#{remark,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_guess_index_51 SET 	
+			open = #{open},
+			close = #{close},
+			index_date = #{indexDate},
+			guess_no = #{guessNo},
+			remark = #{remark,jdbcType=VARCHAR}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_guess_index_51
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

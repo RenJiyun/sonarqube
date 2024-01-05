@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.quant.dao.ActQuantTeamDao">
+    
+	<sql id="actQuantTeamColumns">
+		a.id AS id,
+		a.team_id AS teamId,
+		a.leader AS leader,
+		a.leader_mobile AS leaderMobile,
+		a.leader_email AS leaderEmail,
+		a.teammates AS teammates,
+		a.professor AS professor,
+		a.professor_mobile AS professorMobile,
+		a.professor_email AS professorEmail,
+		a.university AS university,
+		a.department AS department,
+		a.major AS major,
+		a.education AS education,
+		a.ths_account AS thsAccount,
+		a.dk_account AS dkAccount,
+		a.account_type AS accountType,
+		a.create_time AS createTime,
+		a.update_time AS updateTime,
+		a.is_deleted AS isDeleted
+	</sql>
+	
+	<sql id="actQuantTeamJoins">
+	</sql>
+    
+	<select id="get" resultType="ActQuantTeam">
+		SELECT 
+			<include refid="actQuantTeamColumns"/>
+		FROM act_quant_team a
+		<include refid="actQuantTeamJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActQuantTeam">
+		SELECT 
+			<include refid="actQuantTeamColumns"/>
+		FROM act_quant_team a
+		<include refid="actQuantTeamJoins"/>
+		<where>
+			<if test="teamId != null and teamId != ''">
+				AND a.team_id = #{teamId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="ActQuantTeam">
+		SELECT 
+			<include refid="actQuantTeamColumns"/>
+		FROM act_quant_team a
+		<include refid="actQuantTeamJoins"/>
+		<where>
+			
+		</where>		
+	</select>
+
+	<select id="findHotteams" resultType="ActQuantTeam">
+		SELECT *
+		FROM (
+			SELECT *
+			FROM (
+				SELECT row_.*, rownum as "order"
+				FROM (
+					SELECT 
+						<include refid="actQuantTeamColumns"/>
+						,nvl(t.totalVoteCount, 0) totalVoteCount
+					FROM act_quant_team a
+					LEFT JOIN (<include refid="selectTeamVote"/>) t ON t.team_id = a.team_id
+					<where>
+
+					</where>
+						ORDER BY totalVoteCount DESC nulls last, a.id DESC
+					) row_
+				) tt
+					<where>
+						<if test="teamIdOrLeader != null and teamIdOrLeader != ''">
+							(tt.teamId LIKE '%'||#{teamIdOrLeader}||'%' 
+								OR tt.leader LIKE '%'||#{teamIdOrLeader}||'%')
+						</if>
+					</where>
+				
+                ) table_alias
+         WHERE rownum > #{page.start} AND <![CDATA[ rownum <= #{page.end} ]]>
+	</select>
+	
+	<select id="findTeamStratDto" resultType="ActQuantTeamStratDto">
+		SELECT *
+		FROM (
+			SELECT *
+			FROM (
+				SELECT row_.*, rownum as "order"
+				FROM (
+					SELECT 
+						<include refid="actQuantTeamColumns"/>
+						,b.account
+						,b.strategyName
+						,b.score
+						,b.evaluation
+						,b.backTraceDateStart
+						,b.backTraceDateEnd
+						,b.runTime
+						,nvl(t.totalVoteCount, 0) totalVoteCount
+<!-- 						,nvl(t.dayVoteCount, 0) dayVoteCount -->
+					FROM act_quant_team a
+					LEFT JOIN (<include refid="selectLatelyStat"/>) b ON (a.ths_account = b.account OR a.dk_account = b.account) 
+<!-- 					AND b.accountType = a.account_type -->
+					LEFT JOIN (<include refid="selectTeamVote"/>) t ON t.team_id = a.team_id
+					<where>
+					</where>
+					ORDER BY to_number(score) DESC nulls last, a.id DESC
+					) row_
+			) tt
+				<where>
+	         		<if test="teamId != null and teamId != ''">
+						AND tt.teamId LIKE '%'||#{teamId}||'%'
+					</if>
+					<if test="leader != null and leader != ''">
+						AND tt.leader LIKE '%'||#{leader}||'%'
+					</if>
+				</where>
+                ) table_alias
+         WHERE rownum > #{page.start} AND <![CDATA[ rownum <= #{page.end} ]]>
+
+	</select>
+
+	<sql id="selectTeamVote">
+		SELECT
+			a.team_id AS team_id,
+			count(1) AS totalVoteCount
+		FROM act_quant_team_like a
+		GROUP BY a.team_id
+	</sql>
+
+	<sql id="selectLatelyStat">
+		SELECT
+			a.account AS account
+			,a.account_type accountType
+			,max(a.strategy_name) strategyName
+			,max(a.score) score
+			,max(to_char(a.evaluation)) evaluation
+			,max(a.backtrace_datestart) backTraceDateStart						
+			,max(a.backtrace_dateend) backTraceDateEnd						
+			,max(a.run_time) runTime
+		FROM act_quant_strat_aval a
+		WHERE
+			a.backtrace_datestart = #{backTraceDateStart}
+			AND a.backtrace_dateend = #{backTraceDateEnd}
+		GROUP BY a.account, a.account_type
+	</sql>
+				
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_quant_team(
+			id,
+			team_id,
+			leader,
+			leader_mobile,
+			leader_email,
+			teammates,
+			professor,
+			professor_mobile,
+			professor_email,
+			university,
+			department,
+			major,
+			education,
+			ths_account,
+			dk_account,
+			create_time,
+			update_time,
+			is_deleted
+		) VALUES (
+			#{id},
+			#{teamId},
+			#{leader},
+			#{leaderMobile},
+			#{leaderEmail},
+			#{teammates},
+			#{professor},
+			#{professorMobile},
+			#{professorEmail},
+			#{university},
+			#{department},
+			#{major},
+			#{education},
+			#{thsAccount},
+			#{dkAccount},
+			#{createTime},
+			#{updateTime},
+			#{isDeleted}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_quant_team SET 	
+			team_id = #{teamId},
+			leader = #{leader},
+			leader_mobile = #{leaderMobile},
+			leader_email = #{leaderEmail},
+			professor = #{professor},
+			professor_mobile = #{professorMobile},
+			professor_email = #{professorEmail},
+			university = #{university},
+			department = #{department},
+			major = #{major},
+			education = #{education},
+			ths_account = #{thsAccount},
+			dk_account = #{dkAccount},
+			create_time = #{createTime},
+			update_time = #{updateTime},
+			is_deleted = #{isDeleted}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_quant_team
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

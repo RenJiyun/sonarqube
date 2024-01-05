@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.redeem.dao.ActActivityPrizeDao">
+    
+	<sql id="actActivityPrizeColumns">
+		a.id AS "id",
+		a.activity_code AS "activityCode",
+		a.user_id AS "userId",
+		a.redeem_id AS "redeemId",
+		a.create_time AS "createTime"
+	</sql>
+	
+	<sql id="actActivityPrizeJoins">
+	</sql>
+    
+	<select id="get" resultType="ActActivityPrize">
+		SELECT 
+			<include refid="actActivityPrizeColumns"/>
+		FROM act_activity_prize a
+		<include refid="actActivityPrizeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActActivityPrize">
+		SELECT 
+			<include refid="actActivityPrizeColumns"/>,
+			b.status AS "redeemStatus",
+			b.code AS "redeemCode",
+			c.name AS "typeName",
+			d.goods_name as "goodsName",
+			d.goods_time as "goodsTime"
+		FROM act_activity_prize a
+		LEFT JOIN act_redeem b ON a.redeem_id = b.id
+		LEFT JOIN act_redeem_type c ON b.type_code = c.code
+		LEFT JOIN act_activity_goods d ON a.activity_code = d.activity_code AND b.goods_id = d.goods_id
+		<include refid="actActivityPrizeJoins"/>
+		<where>
+			
+			<if test="activityCode != null and activityCode != ''">
+				AND a.activity_code = #{activityCode}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="redeemStatus != null and redeemStatus != ''">
+				AND b.status = #{redeemStatus}
+			</if>
+		</where>
+	</select>
+
+
+	
+	<select id="findAllList" resultType="com.wlzq.activity.redeem.model.ActActivityPrize">
+		SELECT 
+			<include refid="actActivityPrizeColumns"/>
+		FROM act_activity_prize a
+		<include refid="actActivityPrizeJoins"/>
+		<where>
+			
+		</where>		
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_activity_prize(
+			activity_code,
+			user_id,
+			redeem_id,
+			create_time
+		) VALUES (
+			#{activityCode, jdbcType=VARCHAR},
+			#{userId, jdbcType=VARCHAR},
+			#{redeemId, jdbcType=INTEGER},
+			#{createTime, jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_activity_prize SET 	
+			activity_code = #{activityCode, jdbcType=VARCHAR},
+			user_id = #{userId, jdbcType=VARCHAR},
+			redeem_id = #{redeemId, jdbcType=INTEGER},
+			create_time = #{createTime, jdbcType=TIMESTAMP}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_activity_prize
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

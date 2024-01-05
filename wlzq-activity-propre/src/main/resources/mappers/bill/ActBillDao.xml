@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.bill.dao.ActBillDao">
+
+	<sql id="actBillColumns">
+		a.client_id AS "clientId",
+		a.organ_flag AS "organFlag",
+		a.login_days AS "loginDays",
+		a.login_earliest AS "loginEarliest",
+		a.login_latest AS "loginLatest",
+		a.stock_etf_order_cnt AS "stockEtfOrderCnt",
+		a.ofund_order_cnt AS "ofundOrderCnt",
+		a.cond_stock_order_cnt AS "condStockOrderCnt",
+		a.self_stk_up100_cnt AS "selfStkUp100Cnt",
+		a.self_stk_up100_list AS "selfStkUp100List",
+		a.self_stk_dr100_cnt AS "selfStkDr100Cnt",
+		a.self_stk_dr100_list AS "selfStkDr100List",
+		a.self_stk_surged100_cnt AS "selfStkSurged100Cnt",
+		a.self_stk_surged100_list AS "selfStkSurged100List",
+		a.self_stock_cnt AS "selfStockCnt",
+		a.self_max_up_stock_code AS "selfMaxUpStockCode",
+		a.self_max_up_stock_name AS "selfMaxUpStockName",
+		a.self_max_up_stock_change_pct AS "selfMaxUpStockChangePct",
+		a.use_lv2_day AS "useLv2Day",
+		a.use_cyjj_day AS "useCyjjDay",
+		a.use_ztzs_day AS "useZtzsDay",
+		a.use_auxiliarytools_list AS "useAuxiliarytoolsList",
+		a.inv_product_cnt AS "invProductCnt",
+		a.visit_int_page_day AS "visitIntPageDay",
+		a.avg_hold_pct AS "avgHoldPct",
+		a.top_hold_pct AS "topHoldPct",
+		a.opt_crdt_perm AS "optCrdtPerm",
+		a.notuse_fund_day AS "notuseFundDay",
+		a.notuse_fund_avgbalance AS "notuseFundAvgbalance",
+		a.notuse_fund_gzhgprofit AS "notuseFundGzhgprofit",
+		a.notuse_fund_dayif30 AS "notuseFundDayif30",
+		a.profit_ytd AS "profitYtd",
+		a.up_top500_stk_cnt AS "upTop500StkCnt",
+		a.act_profit_ytd_rank_pct AS "actProfitYtdRankPct",            
+		a.max_profit_month AS "maxProfitMonth",
+		a.max_profit_m AS "maxProfitM",
+		a.max_profit_secucode AS "maxProfitSecucode",
+		a.max_profit_secuname AS "maxProfitSecuname",
+		a.max_profit_p AS "maxProfitP",
+		a.hold_stock_surged_days AS "holdStockSurgedDays",
+		a.surged_stock_list AS "surgedStockList",
+		a.ipo_entrust_times AS "ipoEntrustTimes",
+		a.ipo_stock_p_times AS "ipoStockPTimes",
+		a.ipo_bond_p_times AS "ipoBondPTimes",
+		a.ipo_hold_profit_ytd AS "ipoHoldProfitYtd",
+		a.fund_trd_cnt AS "fundTrdCnt",
+		a.fund_trd_profit AS "fundTrdProfit",
+		a.fin_prod_trd_cnt_ytd AS "finProdTrdCntYtd",
+		a.fin_prod_profit_ytd AS "finProdProfitYtd",
+		a.has_active_xklc_coupon AS "hasActiveXklcCoupon",
+		a.is_share AS "isShare",
+		a.update_time AS "updateTime"
+		
+	</sql>
+	
+	<select id="findBillByCustomerId" resultType="ActBill">
+		SELECT
+		<include refid="actBillColumns" />
+		FROM act_annual_bill_2022_client a
+		WHERE a.client_id = #{clientId}
+	</select>
+
+	<update id="updateBillByCustomerId" parameterType="ActBill">
+		UPDATE act_annual_bill_2022_client SET 	
+			<if test="isShare != null">
+				is_share = #{isShare, jdbcType=INTEGER},
+			</if>
+			update_time = #{updateTime, jdbcType=TIMESTAMP}
+		WHERE client_id = #{clientId}
+	</update>
+
+</mapper>

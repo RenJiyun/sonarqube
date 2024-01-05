@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.voteworks.dao.VoteWorksLotteryDao">
+    
+	<sql id="voteWorksLotteryColumns">
+		a.id AS "id",
+		a.lottery_code AS "lotteryCode",
+		a.status AS "status",
+		a.user_id AS "userId",
+		a.open_id AS "openId",
+		a.is_hit AS "isHit",
+		a.prize_id AS "prizeId",
+		a.mobile AS "mobile",
+		a.send_status AS "sendStatus",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.activitycode AS "activitycode"
+	</sql>
+	
+	<sql id="voteWorksLotteryJoins">
+	</sql>
+    
+	<select id="get" resultType="VoteWorksLottery">
+		SELECT 
+			<include refid="voteWorksLotteryColumns"/>
+		FROM act_vote_works_lottery a
+		<include refid="voteWorksLotteryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="count" resultType="java.lang.Integer">
+		SELECT 
+			count(*)
+		FROM act_vote_works_lottery a
+		<include refid="voteWorksLotteryJoins"/>
+		<where>
+			<if test="openId != null and openId != ''">
+				AND a.open_id = #{openId}
+			</if>
+			<if test="createTimeFrom != null">
+		  		AND a.create_time >= #{createTimeFrom}
+		  	</if>
+			<if test="activitycode != null and activitycode != ''">
+				AND a.activitycode = #{activitycode}
+			</if>
+	  		<if test="createTimeTo != null">
+		  		<![CDATA[AND a.create_time <= #{createTimeTo}]]>
+		  	</if>
+		</where>
+	</select>
+	
+	<select id="findByOpenIdAndCode" resultType="VoteWorksLottery">
+		SELECT 
+			<include refid="voteWorksLotteryColumns"/>
+		FROM act_vote_works_lottery a
+		<include refid="voteWorksLotteryJoins"/>
+		<where>
+			<if test="openId != null and openId != ''">
+				AND a.open_id = #{openId}
+			</if>
+			<if test="lotteryCode != null and lotteryCode != ''">
+		  		AND a.lottery_code = #{lotteryCode}
+		  	</if>
+		  	<if test="activitycode != null and activitycode != ''">
+				AND a.activitycode = #{activitycode}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findPrizes" resultType="WinDto">
+		select *
+		  from (select row_.*, rownum rownum_
+		          from (
+						select 
+                           u.nick_name as "showUserName",
+	                       pt.name      as "prizeName"
+	                    from act_vote_works_lottery a
+	                    left join act_prize p
+	                      on a.prize_id = p.id
+	                    left join act_prize_type pt
+	                      on p.code = pt.code
+	                    left join wechat_user u
+	                      on a.open_id = u.open_id
+	                    <where>
+							a.is_hit = 1 and a.prize_id is not null
+							<if test="activitycode != null and activitycode != ''">
+								AND a.activitycode = #{activitycode}
+							</if>
+						</where>
+	                   order by a.id desc
+				    	) row_
+			         WHERE <![CDATA[ rownum <= #{end} ]]>
+	        ) 
+		 WHERE rownum_ > #{start}
+	</select>
+	
+	<select id="findNotSend" resultType="VoteWorksLottery">
+		select *
+		  from (select row_.*, rownum rownum_
+		          from (
+						select 
+						   a.id as "id",
+						   a.mobile as "mobile",
+	                       pt.name      as "prizeName",
+	                       p.redeem_code AS "redeemCode",
+						   p.card_no AS "cardNo",
+						   p.card_password AS "cardPassword",
+						   pt.type as "prizeType"
+	                    from act_vote_works_lottery a
+	                    left join act_prize p
+	                      on a.prize_id = p.id
+	                    left join act_prize_type pt
+	                      on p.code = pt.code
+	                    <where>
+	                    	 a.is_hit = 1
+	                         and a.send_status = 0
+	                         and a.prize_id is not null
+	                         and a.mobile is not null
+							<if test="activitycode != null and activitycode != ''">
+								AND a.activitycode = #{activitycode}
+							</if>
+						</where>	                         
+	                   order by a.id desc
+				    	) row_
+			         WHERE <![CDATA[ rownum <= #{end} ]]>
+	        ) 
+		 WHERE rownum_ > #{start}
+	</select>
+	
+	<select id="findList" resultType="VoteWorksLottery">
+		SELECT 
+			<include refid="voteWorksLotteryColumns"/>
+		FROM act_vote_works_lottery a
+		<include refid="voteWorksLotteryJoins"/>
+		<where>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="openId != null and openId != ''">
+				AND a.open_id = #{openId}
+			</if>
+			<if test="activitycode != null and activitycode != ''">
+				AND a.activitycode = #{activitycode}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="VoteWorksLottery">
+		SELECT 
+			<include refid="voteWorksLotteryColumns"/>
+		FROM act_vote_works_lottery a
+		<include refid="voteWorksLotteryJoins"/>
+		<where>
+			<if test="activitycode != null and activitycode != ''">
+				AND a.activitycode = #{activitycode}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true" keyColumn="ID" keyProperty="id">
+		INSERT INTO act_vote_works_lottery(
+			user_id,
+			open_id,
+			lottery_code,
+			create_time
+		) VALUES (
+			#{userId},
+			#{openId},
+			#{lotteryCode, jdbcType=VARCHAR},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_vote_works_lottery SET 	
+			mobile = #{mobile, jdbcType=VARCHAR},		
+			status = #{status},
+			is_hit = #{isHit},
+			prize_id = 	#{prizeId, jdbcType=INTEGER},		
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateToSend">
+		UPDATE act_vote_works_lottery SET 	
+			send_status = 1,	
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_vote_works_lottery
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

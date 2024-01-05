@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.guess51.dao.GuessUserDao">
+    
+	<sql id="guessUserColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.openid AS "openid",
+		a.mobile AS "mobile",
+		a.create_time AS "createTime",
+		a.remark AS "remark"
+	</sql>
+	
+	<sql id="guessUserJoins">
+	</sql>
+    
+	<select id="get" resultType="GuessUser">
+		SELECT 
+			<include refid="guessUserColumns"/>
+		FROM act_guess_user_51 a
+		<include refid="guessUserJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findByUserId" resultType="GuessUser">
+		SELECT 
+			<include refid="guessUserColumns"/>
+		FROM act_guess_user_51 a
+		<include refid="guessUserJoins"/>
+		WHERE a.user_id = #{userId}
+	</select>
+	
+	<select id="findList" resultType="GuessUser">
+		SELECT 
+			<include refid="guessUserColumns"/>
+		FROM act_guess_user_51 a
+		<include refid="guessUserJoins"/>
+		<where>
+			
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="openid != null and openid != ''">
+				AND a.openid = #{openid}
+			</if>
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="GuessUser">
+		SELECT 
+			<include refid="guessUserColumns"/>
+		FROM act_guess_user_51 a
+		<include refid="guessUserJoins"/>
+		<where>
+			
+		</where>
+	</select>
+	
+	<insert id="insert" >
+		INSERT INTO act_guess_user_51(
+			user_id,
+			openid,
+			mobile,
+			create_time,
+			remark
+		) VALUES (
+			#{userId},
+			#{openid,jdbcType=VARCHAR},
+			#{mobile},
+			#{createTime,jdbcType=TIMESTAMP},
+			#{remark,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_guess_user_51 SET 	
+			user_id = #{userId,jdbcType=VARCHAR},
+			openid = #{openid,jdbcType=VARCHAR},
+			mobile = #{mobile,jdbcType=VARCHAR},
+			remark = #{remark,jdbcType=VARCHAR}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_guess_user_51
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

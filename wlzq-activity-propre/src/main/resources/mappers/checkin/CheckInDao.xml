@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.checkin.dao.CheckInDao">
+     <resultMap id="checkIn" type="com.wlzq.activity.checkin.model.CheckIn">
+		  <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+		  <result property="checkInTime" column="checkInTime" jdbcType="TIMESTAMP"/>
+	  </resultMap>
+	<sql id="checkInColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.openid AS "openid",
+		a.type AS "type",
+		a.check_in_time AS "checkInTime",
+		a.create_time AS "createTime",
+		a.remark AS "remark"
+	</sql>
+	
+	<sql id="checkInJoins">
+	</sql>
+    
+	<select id="get" resultMap="checkIn">
+		SELECT 
+			<include refid="checkInColumns"/>
+		FROM act_check_in a
+		<include refid="checkInJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="checkIn">
+		SELECT 
+			<include refid="checkInColumns"/>
+		FROM act_check_in a
+		<include refid="checkInJoins"/>
+		<where>
+			
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="checkIn">
+		SELECT 
+			<include refid="checkInColumns"/>
+		FROM act_check_in a
+		<include refid="checkInJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findByUserId" resultMap="checkIn">
+		SELECT 
+			<include refid="checkInColumns"/>
+		FROM act_check_in a
+		<include refid="checkInJoins"/>
+		<where>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findByOpenId" resultMap="checkIn">
+		SELECT 
+			<include refid="checkInColumns"/>
+		FROM act_check_in a
+		<include refid="checkInJoins"/>
+		<where>
+			<if test="openid != null and openid != ''">
+				AND a.openid = #{openid}
+			</if>
+			<if test="timeStart != null">
+				AND a.check_in_time >= #{timeStart}
+			</if>
+			<if test="timeEnd != null">
+				<![CDATA[AND a.check_in_time <= #{timeEnd}]]>
+			</if>
+		</where>
+	</select>
+	
+	<select id="findByTime" resultType="java.util.Map">
+		SELECT 
+			<include refid="checkInColumns"/>
+		FROM act_check_in a
+		<include refid="checkInJoins"/>
+		<where>
+			<if test="openid != null and openid != ''">
+				AND a.openid = #{openid}
+			</if>
+			<if test="timeStart != null">
+				AND a.check_in_time >= #{timeStart}
+			</if>
+			<if test="timeEnd != null">
+				<![CDATA[AND a.check_in_time <= #{timeEnd}]]>
+			</if>
+		</where>
+	</select>
+	
+	<select id="findContinuousCount" resultType="CheckInStatistic">
+		with t1 as
+		 (select distinct TO_DATE(TO_CHAR(c.check_in_time, 'YYYY-MM-DD'),
+		                          'YYYY-MM-DD') time_value
+		    from act_check_in c
+		   where c.openid = #{openid})
+		select to_char(start_time,'yyyy-MM-dd') as "startTime",
+       		to_char(end_time,'yyyy-MM-dd')   as "endTime",
+		       days       as "continuousCount"
+		  from (select *
+		          from (select min(time_value) start_time,
+		                       max(time_value) end_time,
+		                       count(*) days
+		                  from (select time_value,
+		                               to_number(time_value -
+		                                         TO_DATE(#{timeStart}, 'YYYY-MM-DD')) -
+		                               row_number() over(order by time_value) gn
+		                          from t1)
+		                 group by gn)
+		         order by days desc)
+		 where <![CDATA[  start_time <= #{checkInTime} and end_time >=  #{checkInTime}]]>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO act_check_in(
+			user_id,
+			openid,
+			type,
+			create_time,
+			check_in_time,
+			remark
+		) VALUES (
+			#{userId},
+			#{openid},
+			#{type},
+			#{createTime, jdbcType=TIMESTAMP},
+			#{checkInTime, jdbcType=TIMESTAMP},
+			#{remark, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_check_in SET 	
+			user_id = #{userId},
+			openid = #{openid},
+			create_time = #{createTime, jdbcType=TIMESTAMP},
+			check_in_time = #{checkInTime, jdbcType=TIMESTAMP},
+			remark = #{remark, jdbcType=VARCHAR}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_check_in
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

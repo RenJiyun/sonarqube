@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.redeem.dao.RedeemReceiveRecordDao">
+    
+	<sql id="actRedeemReceiveRecordColumns">
+		a.id AS "id",
+		a.activity_code AS "activityCode",
+		a.type_code AS "typeCode",
+		a.receive_id AS "receiveId",
+		a.fund_account AS "fundAccount",
+		a.create_time AS "createTime"
+	</sql>
+	
+	<sql id="actRedeemReceiveRecordJoins">
+	</sql>
+    
+	<select id="get" resultType="RedeemReceiveRecord">
+		SELECT 
+			<include refid="actRedeemReceiveRecordColumns"/>
+		FROM act_redeem_receive_record a
+		<include refid="actRedeemReceiveRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="RedeemReceiveRecord">
+		SELECT 
+			<include refid="actRedeemReceiveRecordColumns"/>
+		FROM act_redeem_receive_record a
+		<include refid="actRedeemReceiveRecordJoins"/>
+		<where>
+			
+			<if test="activityCode != null and activityCode != ''">
+				AND a.activity_code = #{activityCode}
+			</if>
+			<if test="typeCode != null and typeCode != ''">
+				AND a.type_code = #{typeCode}
+			</if>
+			<if test="receiveId != null and receiveId != ''">
+				AND a.receive_id = #{receiveId}
+			</if>
+			<if test="fundAccount != null and fundAccount != ''">
+				AND a.fund_account = #{fundAccount}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="RedeemReceiveRecord">
+		SELECT 
+			<include refid="actRedeemReceiveRecordColumns"/>
+		FROM act_redeem_receive_record a
+		<include refid="actRedeemReceiveRecordJoins"/>
+		<where>
+			
+		</where>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO act_redeem_receive_record(
+			activity_code,
+			type_code,
+			receive_id,
+			fund_account,
+			create_time
+		) VALUES (
+			#{activityCode},
+			#{typeCode},
+			#{receiveId},
+			#{fundAccount},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_redeem_receive_record SET 	
+			activity_code = #{activityCode},
+			type_code = #{typeCode},
+			receive_id = #{receiveId},
+			fund_account = #{fundAccount},
+			create_time = #{createTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_redeem_receive_record
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

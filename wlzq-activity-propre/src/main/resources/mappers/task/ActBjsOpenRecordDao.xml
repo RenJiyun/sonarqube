@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.task.dao.ActBjsOpenRecordDao">
+
+    <resultMap type="com.wlzq.activity.task.model.ActBjsOpenRecord" id="actBjsOpenRecordMap">
+    </resultMap>
+
+    <sql id="actBjsOpenRecordColumns">
+        a.INIT_DATE AS "initDate",
+        a.CLIENT_ID AS "clientId"
+    </sql>
+
+    <select id="findList" resultMap="actBjsOpenRecordMap">
+        SELECT
+        <include refid="actBjsOpenRecordColumns"/>
+        FROM ACT_BJS_OPEN_RECORD a
+        <where>
+        </where>
+    </select>
+
+    <select id="queryByDate" resultType="com.wlzq.activity.task.model.ActBjsOpenRecord">
+        SELECT
+        <include refid="actBjsOpenRecordColumns"/>
+        FROM ACT_BJS_OPEN_RECORD a
+        WHERE a.INIT_DATE > #{lastHandleDate} and a.INIT_DATE <![CDATA[<]]>= #{lastSyncDate}
+    </select>
+</mapper>

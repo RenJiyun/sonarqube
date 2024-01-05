@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wlzq.activity.base.dao.ActHotLineDao" >
+  	<resultMap id="hotlineMap" type="com.wlzq.activity.base.model.ActHotLine">
+  	  <result property="id" column="id" jdbcType="INTEGER"/>
+	  <result property="branchName" column="branchName" jdbcType="VARCHAR"/>
+	  <result property="specialist" column="specialist" jdbcType="VARCHAR"/>  	
+	  <result property="moblie" column="moblie" jdbcType="VARCHAR"/>  	  
+	  <result property="landlinePhone" column="landlinePhone" jdbcType="TIMESTAMP"/>
+	</resultMap>
+	
+  <!-- 查询的列  start  -->
+  <sql id="hotline_columns" >
+  		a.id as id,
+  		a.branch_name as branchName,
+  		a.specialist as specialist,
+  		a.moblie as moblie,
+  		a.landlinePhone as landlinePhone
+  </sql>
+  <!-- 查询的列  end  -->
+  
+  <!-- 连接base_branch start-->
+  <sql id="branchJoins">
+  	INNER JOIN base_branch b 
+  	ON a.branch_name = b.branchname
+  	INNER JOIN acc_customer c
+  	ON b.branchno = c.branch_no
+  </sql>
+  <!-- 连接base_branch end-->  
+
+  <!-- 返回条数  start  -->
+  <sql id = "rownum">
+  	<if test="rownum != null and rownum >= 0">
+  		rownum <![CDATA[<=]]> #{rownum}
+  	</if>
+  </sql>
+  <!-- 返回条数  end  -->
+  
+  <!-- 分页  start  -->
+  <sql id = "page">
+  	<if test="start != null and end != null and start >= 0 and end >= 0 ">
+  		limit #{start},#{end}
+  	</if>
+  </sql>
+  <!-- 分页  end  -->
+
+  <!-- 查询条件 start -->
+  <sql id="comm_where">
+  	1=1
+  		<if test="hotline.id != null and hotline.id != '' ">
+	  		and a.ID = #{hotline.id}
+	  	</if>
+  		<if test="hotline.branchName != null and hotline.branchName != '' ">
+	  		and a.branch_name = #{hotline.branchName}
+	  	</if>
+  		<if test="hotline.specialist != null and hotline.specialist != '' ">
+	  		and a.specialist = #{hotline.specialist}
+	  	</if>
+  		<if test="hotline.moblie != null and hotline.moblie != '' ">
+	  		and a.moblie = #{hotline.moblie}
+	  	</if>
+  		<if test="hotline.landlinePhone != null and hotline.landlinePhone != '' ">
+	  		and a.landlinePhone = #{hotline.landlinePhone}
+	  	</if>
+  </sql>
+  <!-- 查询条件 end  -->
+  
+  <!-- 实体通用方法  start  -->
+
+  <!-- 实体通用方法  end  -->
+  
+  <!-- 修改 start -->
+  
+  <!-- 修改 end -->
+  
+  <!-- 新增 start -->
+
+  <!-- 新增 end -->
+
+  <!-- 关联查询 -->
+  <select id="getByCustomerId" resultMap="hotlineMap">
+  	SELECT 
+  		<include refid="hotline_columns"></include>
+  	FROM act_hotline a 
+  		<include refid="branchJoins"></include>
+  	<where>
+  		<if test="customerId !=null and customerId != ''">
+  			And c.customer_id = #{customerId}
+  		</if>
+  	</where>
+  </select>
+  
+</mapper>

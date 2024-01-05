@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wlzq.activity.voteworks.dao.VoteWorksMessageDao">
+    
+	<sql id="voteWorksMessageColumns">
+		a.id AS "id",
+		a.user_id AS "userId",
+		a.open_id AS "openId",
+		a.no AS "no",
+		a.tag AS "tag",
+		a.content AS "content",
+		a.create_time AS "createTime"
+	</sql>
+	
+	<sql id="voteWorksMessageJoins">
+	</sql>
+    
+	<select id="get" resultType="VoteWorksMessage">
+		SELECT 
+			<include refid="voteWorksMessageColumns"/>
+		FROM act_vote_works_message a
+		<include refid="voteWorksMessageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="count" resultType="java.lang.Integer">
+		SELECT 
+			count(*)
+		FROM act_vote_works_message a
+		<where>
+			<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+			<if test="no != null and no != ''">
+				AND a.no = #{no}
+			</if>
+			<if test="tag != null">
+				AND a.tag = #{tag}
+			</if>			
+			<if test="activitycode != null and activitycode != ''">
+				AND a.no in (select b.no from act_vote_works b where b.activitycode = #{activitycode} )
+			</if>
+		</where>
+	</select>
+	
+	<select id="findList" resultType="VoteWorksMessage">
+		SELECT 
+			<include refid="voteWorksMessageColumns"/>
+		FROM act_vote_works_message a
+		<include refid="voteWorksMessageJoins"/>
+		<where>
+			<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+			<if test="msg.no != null and msg.no != ''">
+				AND a.no = #{msg.no}
+			</if>
+			<if test="msg.tag != null">
+				AND a.tag = #{msg.tag}
+			</if>			
+			<if test="activitycode != null and activitycode != ''">
+				AND a.no in (select b.no from act_vote_works b where b.activitycode = #{activitycode} )
+			</if>
+		</where>
+		<choose>
+			<when test="msg.page !=null and msg.page.orderBy != null and msg.page.orderBy != ''">
+				ORDER BY ${msg.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findMessages" resultType="VoteWorksMessage">
+		select *
+		  from (select row_.*, rownum rownum_
+		          from (
+						SELECT 
+								a.id as "id",
+								a.content AS "content"
+								,b.nick_name as "nickname"
+								,b.HEAD_IMAGE_URL as "portrait"
+							FROM act_vote_works_message a
+								left join wechat_user b  on a.open_id = b.open_id
+							<include refid="voteWorksMessageJoins"/>
+							<where>
+								<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+								<if test="no != null and no != ''">
+									AND a.no = #{no}
+								</if>
+								<if test="tag != null">
+									AND a.tag = #{tag}
+								</if>									
+								<if test="minId != null">
+									 <![CDATA[AND a.id > #{minId} ]]>
+								</if>
+								<if test="activitycode != null and activitycode != ''">
+									AND a.no in (select c.no from act_vote_works c where c.activitycode = #{activitycode} )
+								</if>
+							</where>
+	                   		order by a.id desc
+				    	) row_
+			         WHERE <![CDATA[ rownum <= #{end} ]]>
+	        ) 
+		 WHERE rownum_ > #{start}
+	</select>
+	
+	<select id="findAllList" resultType="VoteWorksMessage">
+		SELECT 
+			<include refid="voteWorksMessageColumns"/>
+		FROM act_vote_works_message a
+		<include refid="voteWorksMessageJoins"/>
+		<where>
+			<![CDATA[ a.create_time >= to_date('2019-06-26 00:00:00', 'yyyy-MM-dd HH24:mi:ss')]]>
+			<if test="activitycode != null and activitycode != ''">
+				AND a.no in (select b.no from act_vote_works b where b.activitycode = #{activitycode} )
+			</if>
+		</where>		
+		<choose>
+			<when test="msg.page !=null and msg.page.orderBy != null and msg.page.orderBy != ''">
+				ORDER BY ${msg.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert"  useGeneratedKeys="true">
+		INSERT INTO act_vote_works_message(
+			user_id,
+			open_id,
+			no,
+			content,
+			create_time
+		) VALUES (
+			#{userId},
+			#{openId},
+			#{no},
+			#{content},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE act_vote_works_message SET 	
+			user_id = #{userId},
+			open_id = #{openId},
+			no = #{no},
+			content = #{content},
+			create_time = #{createTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM act_vote_works_message
+		WHERE id = #{id}
+	</update>
+	
+</mapper>
